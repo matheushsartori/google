@@ -70,20 +70,54 @@ export async function POST(request: Request) {
 
             console.log("✅ Instância criada na Evolution API com sucesso");
 
-            // 3. Save to local DB (using instanceName as instanceId)
+            // 3. Configure webhooks automatically
+            const webhookUrl = "https://google-iota-tan.vercel.app/api/webhook";
+            const webhookPayload = {
+                enabled: true,
+                url: webhookUrl,
+                webhook_by_events: false,
+                events: [
+                    "QRCODE_UPDATED",
+                    "CONNECTION_UPDATE",
+                    "MESSAGES_UPSERT",
+                    "MESSAGES_UPDATE",
+                    "SEND_MESSAGE"
+                ]
+            };
+
+            try {
+                const webhookResponse = await fetch(`${apiUrl}/webhook/set/${name}`, {
+                    method: "POST",
+                    headers: {
+                        "Content-Type": "application/json",
+                        "apikey": apiToken,
+                    },
+                    body: JSON.stringify(webhookPayload),
+                });
+
+                if (webhookResponse.ok) {
+                    console.log("✅ Webhook configurado com sucesso");
+                } else {
+                    console.warn("⚠️ Falha ao configurar webhook, mas instância foi criada");
+                }
+            } catch (webhookError) {
+                console.warn("⚠️ Erro ao configurar webhook:", webhookError);
+            }
+
+            // 4. Save to local DB (using instanceName as instanceId)
             const instance = await prisma.connectionInstance.upsert({
                 where: { instanceId: name },
                 update: {
                     name: name,
                     instanceId: name,
                     status: "DISCONNECTED",
-                    webhookStatus: "INACTIVE",
+                    webhookStatus: "ACTIVE",
                 },
                 create: {
                     name: name,
                     instanceId: name,
                     status: "DISCONNECTED",
-                    webhookStatus: "INACTIVE",
+                    webhookStatus: "ACTIVE",
                 },
             });
 

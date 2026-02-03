@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-// Reload signal 1
+// Reload signal 2
 
 const prismaClientSingleton = () => {
     return new PrismaClient({

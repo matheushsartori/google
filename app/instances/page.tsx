@@ -69,16 +69,19 @@ export default function InstancesPage() {
                 setQrTimer(40);
             }
 
-            // If the API says it's connected, we should update our local status too
-            if (res.data.status === "open" || res.data.instance?.status === "open") {
-                // Update local instances list status
-                setInstances(prev => prev.map(inst =>
-                    inst.instanceId === instanceName ? { ...inst, status: "CONNECTED" } : inst
-                ));
+            // If the API says it's connected, sync to database
+            if (res.data.status === "open" || res.data.instance?.state === "open") {
+                try {
+                    await axios.post(`/api/instances/${instanceName}/sync`);
+                    // Refresh instances list to show updated status
+                    await fetchInstances();
+                    toast.success("WhatsApp conectado com sucesso!");
+                } catch (syncError) {
+                    console.error("Error syncing status:", syncError);
+                }
             }
         } catch (error) {
             console.error(error);
-            // toast.error("Erro ao carregar QR Code");
         } finally {
             setLoadingQR(false);
         }

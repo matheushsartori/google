@@ -11,6 +11,31 @@ export async function POST(request: Request) {
 
         const { event, instance, data } = body;
 
+        // Handle connection status updates
+        if (event === "connection.update") {
+            const state = data?.state;
+            const instanceName = instance;
+
+            if (state && instanceName) {
+                const isConnected = state === "open";
+
+                try {
+                    await prisma.connectionInstance.updateMany({
+                        where: { instanceId: instanceName },
+                        data: {
+                            status: isConnected ? "CONNECTED" : "DISCONNECTED",
+                            lastSync: new Date(),
+                        },
+                    });
+                    console.log(`✅ Status da instância ${instanceName} atualizado para: ${isConnected ? "CONNECTED" : "DISCONNECTED"}`);
+                } catch (dbError) {
+                    console.error("Erro ao atualizar status da instância:", dbError);
+                }
+            }
+
+            return NextResponse.json({ success: true, message: "Connection status updated" });
+        }
+
         // Only process incoming messages (UPSERT)
         if (event !== "messages.upsert") {
             return NextResponse.json({ success: true, message: "Ignoring non-upsert event" });
