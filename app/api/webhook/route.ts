@@ -63,6 +63,12 @@ export async function POST(request: Request) {
         }
 
         const remoteJid = key.remoteJid;
+
+        // Ignore Group Messages
+        if (remoteJid.includes("@g.us")) {
+            return NextResponse.json({ success: true, message: "Ignoring group message" });
+        }
+
         const phone = remoteJid.split("@")[0];
         const text = message.conversation || message.extendedTextMessage?.text || "";
 

@@ -27,24 +27,19 @@ export default function LoginPage() {
             <div className="absolute top-1/3 right-20 size-20 bg-primary/10 blur-2xl rounded-full animate-pulse" style={{ animationDelay: '2s' }}></div>
 
             <div className="w-full max-w-md relative z-10">
-                {/* Logo Card */}
-                <div className="bg-white/95 backdrop-blur-xl rounded-3xl p-6 mb-6 shadow-2xl border border-[#d4af37]/20">
-                    <div className="flex justify-center">
-                        <img
-                            src="https://mercestenis.com.br/wp-content/uploads/2026/01/LOGO-MERCES-01.webp"
-                            alt="Mercês Tênis Logo"
-                            className="h-24 w-auto object-contain"
-                        />
-                    </div>
+                {/* Logo */}
+                <div className="flex justify-center mb-8">
+                    <img
+                        src="https://mercestenis.com.br/wp-content/uploads/2026/01/LOGO-MERCES-01.webp"
+                        alt="Mercês Tênis Logo"
+                        className="h-32 w-auto object-contain drop-shadow-[0_0_15px_rgba(212,175,55,0.3)] hover:scale-105 transition-transform duration-500"
+                    />
                 </div>
 
                 {/* Login Card */}
-                <div className="bg-[#0f1218]/95 backdrop-blur-xl border border-[#d4af37]/20 rounded-3xl shadow-2xl overflow-hidden">
+                <div className="bg-[#0f1218]/80 backdrop-blur-md border border-[#d4af37]/10 rounded-3xl shadow-2xl overflow-hidden">
                     {/* Header */}
-                    <div className="p-8 pb-6 text-center border-b border-slate-800/50 bg-gradient-to-br from-[#1a4d2e]/20 to-transparent">
-                        <div className="inline-flex p-4 bg-gradient-to-br from-[#d4af37]/20 to-primary/20 rounded-2xl mb-4 border border-[#d4af37]/30">
-                            <span className="material-symbols-outlined text-4xl text-[#d4af37]">sports_tennis</span>
-                        </div>
+                    <div className="p-8 pb-2 text-center border-b border-transparent">
                         <h1 className="text-3xl font-black text-white mb-2 italic">Painel Administrativo</h1>
                         <p className="text-slate-400 text-sm font-medium">Sistema de Gestão Mercês Tênis</p>
                     </div>

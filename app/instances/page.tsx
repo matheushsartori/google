@@ -274,47 +274,49 @@ export default function InstancesPage() {
 
                 <div className="flex-1 flex overflow-hidden">
                     {/* List Column */}
-                    <div className="w-80 border-r border-slate-800/50 flex flex-col bg-slate-900/20">
-                        <div className="p-4 border-b border-slate-800/50 flex justify-between items-center bg-slate-900/40 backdrop-blur-md">
-                            <h3 className="text-white font-bold text-xs uppercase tracking-[0.2em] opacity-70">Suas Instâncias</h3>
+                    <div className="w-80 border-r border-[#d4af37]/10 flex flex-col bg-[#0f1218]">
+                        <div className="p-4 flex justify-between items-center bg-[#0f1218]/50 backdrop-blur-md sticky top-0 z-10">
+                            <h3 className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Instâncias Ativas</h3>
                             <button
                                 onClick={() => setIsModalOpen(true)}
-                                className="size-8 rounded-lg bg-primary hover:bg-primary/90 text-white flex items-center justify-center transition-all shadow-lg shadow-primary/20 group"
+                                className="size-8 rounded-lg bg-[#d4af37]/10 hover:bg-[#d4af37]/20 text-[#d4af37] flex items-center justify-center transition-all border border-[#d4af37]/20 group"
                             >
                                 <span className="material-symbols-outlined text-xl group-hover:rotate-90 transition-transform">add</span>
                             </button>
                         </div>
 
-                        <div className="flex-1 overflow-y-auto p-3 space-y-2 custom-scrollbar">
+                        <div className="flex-1 overflow-y-auto p-3 custom-scrollbar">
                             {loading ? (
                                 Array(4).fill(0).map((_, i) => (
-                                    <div key={i} className="h-16 bg-slate-800/20 rounded-xl animate-pulse"></div>
+                                    <div key={i} className="h-20 bg-slate-800/20 rounded-xl animate-pulse mb-2"></div>
                                 ))
                             ) : filteredInstances.length === 0 ? (
-                                <div className="text-center py-10 px-4">
-                                    <span className="material-symbols-outlined text-slate-700 text-4xl mb-2">layers_clear</span>
-                                    <p className="text-slate-600 text-xs font-medium">Nenhuma instância encontrada</p>
+                                <div className="text-center py-20 px-4">
+                                    <div className="size-16 bg-slate-800/30 rounded-full flex items-center justify-center mx-auto mb-4 border border-slate-700/30">
+                                        <span className="material-symbols-outlined text-slate-600 text-2xl">dns</span>
+                                    </div>
+                                    <p className="text-slate-500 text-xs font-medium">Nenhuma instância encontrada</p>
                                 </div>
                             ) : (
                                 filteredInstances.map((inst) => (
                                     <button
                                         key={inst.instanceId}
                                         onClick={() => setSelectedId(inst.instanceId)}
-                                        className={`w-full text-left p-4 rounded-xl transition-all border group relative overflow-hidden ${selectedId === inst.instanceId
-                                            ? "bg-primary/10 border-primary/30 shadow-2xl shadow-primary/5"
-                                            : "bg-transparent border-transparent hover:bg-slate-800/30"
+                                        className={`w-full text-left p-4 rounded-xl transition-all border group relative overflow-hidden mb-2 ${selectedId === inst.instanceId
+                                            ? "bg-[#d4af37]/10 border-[#d4af37]/30 shadow-[0_0_15px_rgba(212,175,55,0.1)]"
+                                            : "bg-slate-900/40 border-slate-800/50 hover:bg-slate-800/60 hover:border-slate-700 hover:translate-x-1"
                                             }`}
                                     >
-                                        {selectedId === inst.instanceId && (
-                                            <div className="absolute left-0 top-0 bottom-0 w-1 bg-primary"></div>
-                                        )}
-                                        <div className="flex items-center justify-between mb-1">
-                                            <span className={`text-sm font-bold ${selectedId === inst.instanceId ? "text-primary" : "text-slate-300 group-hover:text-white"}`}>
+                                        <div className="flex items-center justify-between mb-1 relative z-10">
+                                            <span className={`text-sm font-bold ${selectedId === inst.instanceId ? "text-white" : "text-slate-400 group-hover:text-white"}`}>
                                                 {inst.name}
                                             </span>
-                                            <div className={`size-2 rounded-full ${inst.status === 'CONNECTED' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]' : 'bg-red-500'}`}></div>
+                                            <div className={`size-2 rounded-full ring-2 ring-black/20 ${inst.status === 'CONNECTED' ? 'bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.8)]' : 'bg-red-500/50'}`}></div>
                                         </div>
-                                        <p className="text-[10px] text-slate-500 font-mono truncate uppercase tracking-tighter group-hover:text-slate-400">ID: {inst.instanceId}</p>
+                                        <div className="flex items-center justify-between relative z-10">
+                                            <p className="text-[10px] text-slate-500 font-mono truncate uppercase tracking-widest group-hover:text-slate-400">ID: {inst.instanceId}</p>
+                                            <span className="material-symbols-outlined text-[16px] text-slate-600 group-hover:text-[#d4af37] transition-colors">chevron_right</span>
+                                        </div>
                                     </button>
                                 ))
                             )}
@@ -322,22 +324,22 @@ export default function InstancesPage() {
                     </div>
 
                     {/* Detail Column */}
-                    <div className="flex-1 overflow-y-auto bg-background-dark/30">
+                    <div className="flex-1 overflow-y-auto bg-gradient-to-br from-[#0f1218] via-[#0f1218] to-[#1a4d2e]/10">
                         {!selectedInstance ? (
                             <div className="h-full flex flex-col items-center justify-center text-center p-8">
-                                <div className="size-32 rounded-3xl bg-slate-800/10 border border-slate-700/20 flex items-center justify-center text-slate-700 mb-8 relative">
-                                    <div className="absolute inset-0 bg-primary/5 blur-3xl rounded-full"></div>
-                                    <span className="material-symbols-outlined text-6xl relative z-10">hub</span>
+                                <div className="size-32 rounded-full bg-[#d4af37]/5 border border-[#d4af37]/10 flex items-center justify-center text-[#d4af37] mb-8 relative animate-pulse-slow">
+                                    <div className="absolute inset-0 bg-[#d4af37]/5 blur-3xl rounded-full"></div>
+                                    <span className="material-symbols-outlined text-5xl relative z-10 opacity-80">hub</span>
                                 </div>
-                                <h3 className="text-white text-2xl font-black mb-3 tracking-tight">Gerenciamento de Instâncias</h3>
-                                <p className="text-slate-500 mb-8 max-w-sm font-medium leading-relaxed">
-                                    Conecte e gerencie suas instâncias da Evolution API v2.3.7 para automatizar seu atendimento.
+                                <h3 className="text-white text-3xl font-black mb-3 tracking-tighter italic uppercase">Gerenciamento</h3>
+                                <p className="text-slate-500 mb-8 max-w-sm font-medium leading-relaxed text-sm">
+                                    Selecione uma instância para visualizar status, escanear QR Code ou gerenciar configurações.
                                 </p>
                                 <button
                                     onClick={() => setIsModalOpen(true)}
-                                    className="bg-primary hover:bg-primary/90 text-white px-10 py-4 rounded-2xl font-black transition-all shadow-xl shadow-primary/20 flex items-center gap-2 group"
+                                    className="bg-[#d4af37] hover:bg-[#b5952f] text-[#0f1218] px-8 py-3 rounded-xl font-bold transition-all shadow-lg shadow-[#d4af37]/20 flex items-center gap-2 group"
                                 >
-                                    <span className="material-symbols-outlined group-hover:scale-125 transition-transform">add_circle</span>
+                                    <span className="material-symbols-outlined group-hover:scale-110 transition-transform">add</span>
                                     Nova Conexão
                                 </button>
                             </div>
@@ -386,18 +388,18 @@ export default function InstancesPage() {
                                 <div className="grid grid-cols-1 lg:grid-cols-5 gap-8">
                                     {/* Stats Card */}
                                     <div className="lg:col-span-2 space-y-6">
-                                        <div className="bg-slate-800/30 border border-slate-700/30 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden group">
+                                        <div className="bg-[#0f1218]/80 border border-[#d4af37]/10 rounded-3xl p-6 backdrop-blur-xl relative overflow-hidden group hover:border-[#d4af37]/20 transition-colors">
                                             <div className="absolute top-0 right-0 p-4 opacity-5 group-hover:opacity-10 transition-opacity">
-                                                <span className="material-symbols-outlined text-6xl">settings_input_component</span>
+                                                <span className="material-symbols-outlined text-6xl text-[#d4af37]">settings_input_component</span>
                                             </div>
                                             <h4 className="text-slate-500 font-black text-[10px] mb-6 uppercase tracking-[0.2em] flex items-center gap-2">
-                                                <span className="size-1 bg-primary rounded-full"></span>
+                                                <span className="size-1 bg-[#d4af37] rounded-full"></span>
                                                 Informações Técnicas
                                             </h4>
                                             <div className="space-y-4">
                                                 <div className="flex justify-between items-center py-3 border-b border-slate-700/30">
                                                     <span className="text-slate-400 text-sm font-medium">Versão Evolution</span>
-                                                    <span className="text-white text-sm font-black italic">v2.3.7 PRÉ-LANÇAMENTO</span>
+                                                    <span className="text-white text-sm font-black italic">v2.3.7</span>
                                                 </div>
                                                 <div className="flex justify-between items-center py-3 border-b border-slate-700/30">
                                                     <span className="text-slate-400 text-sm font-medium">Provider</span>
@@ -405,42 +407,42 @@ export default function InstancesPage() {
                                                 </div>
                                                 <div className="flex justify-between items-center py-3 border-b border-slate-700/30">
                                                     <span className="text-slate-400 text-sm font-medium">Webhooks</span>
-                                                    <span className={`${selectedInstance.webhookStatus === 'ACTIVE' ? 'text-emerald-400' : 'text-slate-600'} text-[10px] font-black uppercase bg-slate-900/50 px-2 py-1 rounded border border-slate-800`}>
-                                                        {selectedInstance.webhookStatus === 'ACTIVE' ? 'Sincronizado' : 'Offline'}
+                                                    <span className={`${selectedInstance.webhookStatus === 'ACTIVE' ? 'text-emerald-400 bg-emerald-500/10 border-emerald-500/20' : 'text-slate-500 bg-slate-800 border-slate-700'} text-[10px] font-black uppercase px-2 py-1 rounded border`}>
+                                                        {selectedInstance.webhookStatus === 'ACTIVE' ? 'Online' : 'Offline'}
                                                     </span>
                                                 </div>
                                                 <div className="flex justify-between items-center py-3">
                                                     <span className="text-slate-400 text-sm font-medium">Uptime</span>
-                                                    <span className="text-white text-sm font-bold">99.9%</span>
+                                                    <span className="text-[#d4af37] text-sm font-black">99.9%</span>
                                                 </div>
                                             </div>
                                         </div>
 
-                                        <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/30 rounded-3xl p-6 shadow-2xl">
+                                        <div className="bg-[#0f1218]/80 border border-[#d4af37]/10 rounded-3xl p-6 shadow-xl">
                                             <h4 className="text-slate-500 font-black text-[10px] mb-4 uppercase tracking-[0.2em]">Painel de Controle</h4>
                                             <div className="grid grid-cols-3 gap-3">
                                                 <button
                                                     onClick={() => handleSyncStatus(selectedInstance.instanceId)}
                                                     disabled={actionLoading}
-                                                    className="flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-slate-900/50 hover:bg-emerald-500/10 border border-slate-700/50 hover:border-emerald-500/30 transition-all group disabled:opacity-50"
+                                                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-slate-900/50 hover:bg-[#d4af37]/10 border border-slate-700/50 hover:border-[#d4af37]/30 transition-all group disabled:opacity-50"
                                                 >
-                                                    <span className={`material-symbols-outlined text-slate-400 group-hover:text-emerald-500 group-hover:scale-110 transition-all ${actionLoading ? 'animate-spin' : ''}`}>sync</span>
-                                                    <span className="text-[10px] text-white font-black uppercase tracking-widest">{actionLoading ? '...' : 'Atualizar'}</span>
+                                                    <span className={`material-symbols-outlined text-slate-400 group-hover:text-[#d4af37] group-hover:scale-110 transition-all ${actionLoading ? 'animate-spin' : ''}`}>sync</span>
+                                                    <span className="text-[9px] text-white font-black uppercase tracking-widest">{actionLoading ? '...' : 'Att'}</span>
                                                 </button>
                                                 <button
                                                     onClick={() => handleRestart(selectedInstance.instanceId)}
                                                     disabled={actionLoading}
-                                                    className="flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-slate-900/50 hover:bg-primary/10 border border-slate-700/50 hover:border-primary/30 transition-all group disabled:opacity-50"
+                                                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-slate-900/50 hover:bg-[#d4af37]/10 border border-slate-700/50 hover:border-[#d4af37]/30 transition-all group disabled:opacity-50"
                                                 >
-                                                    <span className={`material-symbols-outlined text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all ${actionLoading ? 'animate-spin' : ''}`}>restart_alt</span>
-                                                    <span className="text-[10px] text-white font-black uppercase tracking-widest">{actionLoading ? '...' : 'Reiniciar'}</span>
+                                                    <span className={`material-symbols-outlined text-slate-400 group-hover:text-[#d4af37] group-hover:scale-110 transition-all ${actionLoading ? 'animate-spin' : ''}`}>restart_alt</span>
+                                                    <span className="text-[9px] text-white font-black uppercase tracking-widest">{actionLoading ? '...' : 'Reset'}</span>
                                                 </button>
                                                 <button
                                                     onClick={handleOpenDocs}
-                                                    className="flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-slate-900/50 hover:bg-primary/10 border border-slate-700/50 hover:border-primary/30 transition-all group"
+                                                    className="flex flex-col items-center justify-center gap-2 p-4 rounded-2xl bg-slate-900/50 hover:bg-[#d4af37]/10 border border-slate-700/50 hover:border-[#d4af37]/30 transition-all group"
                                                 >
-                                                    <span className="material-symbols-outlined text-slate-400 group-hover:text-primary group-hover:scale-110 transition-all">terminal</span>
-                                                    <span className="text-[10px] text-white font-black uppercase tracking-widest">API Docs</span>
+                                                    <span className="material-symbols-outlined text-slate-400 group-hover:text-[#d4af37] group-hover:scale-110 transition-all">code</span>
+                                                    <span className="text-[9px] text-white font-black uppercase tracking-widest">Docs</span>
                                                 </button>
                                             </div>
                                         </div>

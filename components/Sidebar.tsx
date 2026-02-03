@@ -15,16 +15,18 @@ export function Sidebar() {
     };
 
     return (
-        <aside className="w-64 flex-shrink-0 bg-sidebar-dark border-r border-slate-800 flex flex-col justify-between p-4 h-screen">
+        <aside className="w-64 flex-shrink-0 bg-[#0f1218] border-r border-[#d4af37]/10 flex flex-col justify-between p-4 h-screen z-50">
             <div className="flex flex-col gap-8">
                 {/* Logo */}
-                <div className="flex items-center gap-3 px-2">
-                    <div className="bg-primary rounded-lg p-2 flex items-center justify-center">
-                        <span className="material-symbols-outlined text-white">sports_tennis</span>
-                    </div>
+                <div className="flex items-center gap-3 px-2 py-2">
+                    <img
+                        src="https://mercestenis.com.br/wp-content/uploads/2026/01/LOGO-MERCES-01.webp"
+                        alt="Mercês Tênis Logo"
+                        className="h-10 w-auto object-contain drop-shadow-md"
+                    />
                     <div className="flex flex-col">
-                        <h1 className="text-white text-base font-bold leading-none uppercase tracking-wider">Mercês Tênis</h1>
-                        <p className="text-slate-500 text-[10px] font-medium leading-normal">EVOLUTION API PANEL</p>
+                        <h1 className="text-white text-sm font-bold leading-none uppercase tracking-wider">Mercês Tênis</h1>
+                        <p className="text-slate-500 text-[9px] font-medium leading-normal mt-0.5">Painel de Controle</p>
                     </div>
                 </div>
 
