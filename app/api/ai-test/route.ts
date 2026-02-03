@@ -8,7 +8,7 @@ export async function POST(request: Request) {
 
         // Fetch settings
         const settings = await prisma.settings.findMany();
-        const config = settings.reduce((acc: any, s) => {
+        const config = settings.reduce((acc: any, s: { key: string; value: string }) => {
             acc[s.key] = s.value;
             return acc;
         }, {});
