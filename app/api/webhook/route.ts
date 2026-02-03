@@ -11,8 +11,8 @@ export async function POST(request: Request) {
 
         const { event, instance, data } = body;
 
-        // Save webhook log to database - Temporarily disabled
-        /* try {
+        // Save webhook log to database
+        try {
             await prisma.webhookLog.create({
                 data: {
                     event: event || "UNKNOWN",
@@ -22,7 +22,7 @@ export async function POST(request: Request) {
             });
         } catch (logError) {
             console.error("Error saving webhook log:", logError);
-        } */
+        }
 
         // Handle connection status updates
         if (event === "connection.update") {
