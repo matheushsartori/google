@@ -194,6 +194,26 @@ export default function InstancesPage() {
         }
     };
 
+    const handleSyncStatus = async (instanceName: string) => {
+        setActionLoading(true);
+        try {
+            const res = await axios.post(`/api/instances/${instanceName}/sync`);
+
+            if (res.data.success) {
+                toast.success(`Status atualizado: ${res.data.status}`);
+                await fetchInstances();
+                await fetchConnectionInfo(instanceName);
+            } else {
+                toast.error("Erro ao sincronizar status");
+            }
+        } catch (error: any) {
+            console.error(error);
+            toast.error(error.response?.data?.error || "Erro ao sincronizar status");
+        } finally {
+            setActionLoading(false);
+        }
+    };
+
     const handlePairingCode = async (instanceName: string) => {
         const phone = prompt("Digite o número do WhatsApp (ex: 5511999999999):");
         if (!phone) return;
@@ -398,7 +418,15 @@ export default function InstancesPage() {
 
                                         <div className="bg-gradient-to-br from-slate-900 to-slate-800 border border-slate-700/30 rounded-3xl p-6 shadow-2xl">
                                             <h4 className="text-slate-500 font-black text-[10px] mb-4 uppercase tracking-[0.2em]">Painel de Controle</h4>
-                                            <div className="grid grid-cols-2 gap-3">
+                                            <div className="grid grid-cols-3 gap-3">
+                                                <button
+                                                    onClick={() => handleSyncStatus(selectedInstance.instanceId)}
+                                                    disabled={actionLoading}
+                                                    className="flex flex-col items-center justify-center gap-2 p-5 rounded-2xl bg-slate-900/50 hover:bg-emerald-500/10 border border-slate-700/50 hover:border-emerald-500/30 transition-all group disabled:opacity-50"
+                                                >
+                                                    <span className={`material-symbols-outlined text-slate-400 group-hover:text-emerald-500 group-hover:scale-110 transition-all ${actionLoading ? 'animate-spin' : ''}`}>sync</span>
+                                                    <span className="text-[10px] text-white font-black uppercase tracking-widest">{actionLoading ? '...' : 'Atualizar'}</span>
+                                                </button>
                                                 <button
                                                     onClick={() => handleRestart(selectedInstance.instanceId)}
                                                     disabled={actionLoading}
