@@ -1,0 +1,259 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Configuração IA - Mercês Tênis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                        "wa-dark": "#0b141a",
+                        "wa-panel": "#202c33",
+                        "wa-bubble": "#005c4b",
+                        "wa-bubble-other": "#202c33"
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav {
+            background-color: #137fec;
+            color: white;
+        }
+        .custom-scrollbar::-webkit-scrollbar {
+            width: 4px;
+        }
+        .custom-scrollbar::-webkit-scrollbar-track {
+            background: transparent;
+        }
+        .custom-scrollbar::-webkit-scrollbar-thumb {
+            background: #334155;
+            border-radius: 10px;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex h-screen overflow-hidden">
+<aside class="w-64 flex-shrink-0 bg-[#0a0f14] border-r border-slate-800 flex flex-col justify-between p-4">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-primary rounded-lg p-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">sports_tennis</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-white text-base font-bold leading-none uppercase tracking-wider">Mercês Tênis</h1>
+<p class="text-slate-500 text-[10px] font-medium leading-normal">EVOLUTION API PANEL</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<p class="text-sm font-semibold">Início</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">person_search</span>
+<p class="text-sm font-semibold">Leads</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+<p class="text-sm font-semibold">IA</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">terminal</span>
+<p class="text-sm font-semibold">Instâncias</p>
+<div class="ml-auto w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+</div>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
+<p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-2">IA Status</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-white">Agente Ativo</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase">Ready</span>
+</div>
+</div>
+<button class="flex w-full items-center justify-center gap-2 rounded-lg h-11 bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-sm">save</span>
+<span class="truncate">Salvar Ajustes</span>
+</button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col overflow-hidden">
+<header class="flex items-center justify-between border-b border-slate-800 bg-background-dark px-8 py-4 sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h2 class="text-white text-xl font-bold tracking-tight">Configuração do Agente</h2>
+</div>
+<div class="flex items-center gap-3">
+<div class="flex flex-col items-end pr-4 border-r border-slate-800">
+<span class="text-xs font-bold text-white">Status do Motor</span>
+<span class="text-[10px] text-emerald-500">GPT-4o Conectado</span>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-slate-700" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuCnt8qf77jUCSswu2tOm2eAWFJ9bpl2a0XYQ7L-lTLZiFsBaeauCEetdon61EwfCSkxuQaN5nnCOtAfj_J5LaPcca76JCxwKUACAdJV4QDAy8538ukXzSXKowvcO35uFLjsgJCg6fK21_zYru6RwDn0FGrOFlF5c1nZjHz4CShG05EsM4ep0-Jwu0whOthjmwUplijrKDa1iaHxlL4RBzJZiIw2eZoOchdQkyQuSZf1jyVIo_t-9gAHXxFoAdVNMV1rMbVgUIX3Azw");'></div>
+</div>
+</header>
+<div class="flex-1 overflow-y-auto p-8 custom-scrollbar">
+<div class="grid grid-cols-12 gap-8">
+<div class="col-span-12 lg:col-span-7 space-y-6">
+<div class="flex flex-col gap-1 mb-2">
+<h3 class="text-white text-2xl font-black">Prompt e Contexto</h3>
+<p class="text-slate-400 text-sm">Defina como a IA deve se comportar com seus clientes.</p>
+</div>
+<div class="bg-slate-800/40 border border-slate-700/50 rounded-xl p-6 space-y-4">
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Personalidade &amp; Instruções</label>
+<textarea class="w-full bg-slate-900/50 border-slate-700 rounded-lg text-sm text-slate-200 focus:ring-primary focus:border-primary min-h-[250px] resize-none p-4 leading-relaxed" placeholder="Ex: Você é o atendente virtual do Mercês Tênis. Seja cordial e ajude com agendamentos...">Você é o atendente virtual exclusivo do Mercês Tênis. Seu objetivo é facilitar agendamentos de quadras e responder dúvidas sobre aulas.
+- Sempre consulte o link do LetzPlay para disponibilidade.
+- Para pagamentos, envie a chave PIX informada.
+- Seja esportivo, educado e use emojis de tênis 🎾.
+- Caso não saiba algo, peça para aguardar um atendente humano.</textarea>
+</div>
+<div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Link LetzPlay</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">link</span>
+<input class="w-full bg-slate-900/50 border-slate-700 rounded-lg py-2 pl-10 text-sm text-white focus:ring-primary" type="text" value="https://letzplay.me/merces-tenis"/>
+</div>
+</div>
+<div class="flex flex-col gap-2">
+<label class="text-xs font-bold text-slate-400 uppercase tracking-widest">Chave PIX</label>
+<div class="relative">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[18px]">payments</span>
+<input class="w-full bg-slate-900/50 border-slate-700 rounded-lg py-2 pl-10 text-sm text-white focus:ring-primary" type="text" value="pix@mercestenis.com.br"/>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-slate-800/20 border border-slate-700/50 rounded-xl p-6">
+<h4 class="text-white font-bold mb-4">Configurações Avançadas</h4>
+<div class="space-y-4">
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-sm text-slate-200 font-medium">Tempo de Resposta</span>
+<span class="text-[11px] text-slate-500">Delay simulado para parecer humano</span>
+</div>
+<select class="bg-slate-900 border-slate-700 rounded-md text-xs text-white px-3 py-1.5 focus:ring-primary">
+<option>Imediato</option>
+<option selected="">3-5 segundos</option>
+<option>10-15 segundos</option>
+</select>
+</div>
+<div class="flex items-center justify-between">
+<div class="flex flex-col">
+<span class="text-sm text-slate-200 font-medium">Auto-Atendimento</span>
+<span class="text-[11px] text-slate-500">Iniciar conversa automaticamente</span>
+</div>
+<div class="relative inline-flex items-center cursor-pointer">
+<input checked="" class="sr-only peer" type="checkbox"/>
+<div class="w-11 h-6 bg-slate-700 peer-focus:outline-none rounded-full peer peer-checked:after:translate-x-full rtl:peer-checked:after:-translate-x-full peer-checked:after:border-white after:content-[''] after:absolute after:top-[2px] after:start-[2px] after:bg-white after:border-gray-300 after:border after:rounded-full after:h-5 after:w-5 after:transition-all peer-checked:bg-primary"></div>
+</div>
+</div>
+</div>
+</div>
+</div>
+<div class="col-span-12 lg:col-span-5 flex flex-col h-full">
+<div class="flex flex-col gap-1 mb-2">
+<h3 class="text-white text-2xl font-black">Visualização</h3>
+<p class="text-slate-400 text-sm">Preview em tempo real da IA no WhatsApp.</p>
+</div>
+<div class="flex-1 min-h-[600px] rounded-xl border border-slate-800 overflow-hidden shadow-2xl flex flex-col bg-wa-dark relative">
+<div class="bg-wa-panel px-4 py-3 flex items-center justify-between">
+<div class="flex items-center gap-3">
+<div class="size-10 rounded-full bg-slate-500 flex items-center justify-center text-white">
+<span class="material-symbols-outlined">person</span>
+</div>
+<div class="flex flex-col">
+<span class="text-sm font-semibold text-slate-200">Cliente (Lead)</span>
+<span class="text-[10px] text-slate-400">online</span>
+</div>
+</div>
+<div class="flex gap-4 text-slate-400">
+<span class="material-symbols-outlined text-xl">videocam</span>
+<span class="material-symbols-outlined text-xl">call</span>
+<span class="material-symbols-outlined text-xl">more_vert</span>
+</div>
+</div>
+<div class="flex-1 bg-[url('https://user-images.githubusercontent.com/15075759/28719144-86dc0f70-73b1-11e7-911d-60d70fcded21.png')] bg-repeat p-4 space-y-4 overflow-y-auto custom-scrollbar">
+<div class="flex justify-start">
+<div class="bg-wa-bubble-other p-2.5 rounded-lg rounded-tl-none max-w-[80%] shadow-sm relative">
+<p class="text-sm text-slate-200">Olá! Gostaria de saber se tem horário disponível para hoje às 19h.</p>
+<span class="text-[10px] text-slate-400 float-right mt-1 ml-4">14:30</span>
+</div>
+</div>
+<div class="flex justify-end">
+<div class="bg-wa-bubble p-2.5 rounded-lg rounded-tr-none max-w-[80%] shadow-sm relative">
+<p class="text-sm text-white">Olá! 🎾 Tudo bem? Vou verificar agora mesmo para você no nosso sistema!</p>
+<p class="text-sm text-white mt-2">Você pode conferir a disponibilidade em tempo real e já garantir sua reserva por este link: <span class="underline">letzplay.me/merces-tenis</span></p>
+<p class="text-sm text-white mt-2">Precisa de algo mais? 😉</p>
+<div class="flex items-center justify-end gap-1 mt-1">
+<span class="text-[10px] text-emerald-200/70">14:31</span>
+<span class="material-symbols-outlined text-[14px] text-primary">done_all</span>
+</div>
+</div>
+</div>
+<div class="flex justify-start">
+<div class="bg-wa-bubble-other p-2.5 rounded-lg rounded-tl-none max-w-[80%] shadow-sm relative">
+<p class="text-sm text-slate-200">Consigo pagar por PIX?</p>
+<span class="text-[10px] text-slate-400 float-right mt-1 ml-4">14:32</span>
+</div>
+</div>
+<div class="flex justify-end">
+<div class="bg-wa-bubble p-2.5 rounded-lg rounded-tr-none max-w-[80%] shadow-sm relative">
+<p class="text-sm text-white">Com certeza! 🎾 Para agilizar, você pode realizar o PIX para a nossa chave oficial:</p>
+<p class="text-sm text-white font-bold mt-1">pix@mercestenis.com.br</p>
+<p class="text-sm text-white mt-1">Após o pagamento, é só me enviar o comprovante por aqui mesmo. Até logo!</p>
+<div class="flex items-center justify-end gap-1 mt-1">
+<span class="text-[10px] text-emerald-200/70">14:32</span>
+<span class="material-symbols-outlined text-[14px] text-primary">done_all</span>
+</div>
+</div>
+</div>
+</div>
+<div class="bg-wa-panel px-4 py-2 flex items-center gap-3">
+<span class="material-symbols-outlined text-slate-400">mood</span>
+<span class="material-symbols-outlined text-slate-400">attach_file</span>
+<div class="flex-1 bg-slate-700/50 rounded-lg px-4 py-2 text-slate-400 text-sm">
+                                    Digite uma mensagem
+                                </div>
+<span class="material-symbols-outlined text-slate-400">mic</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="p-6 border-t border-slate-800 flex justify-between items-center bg-background-dark/80 backdrop-blur-md">
+<div class="flex items-center gap-4">
+<div class="size-10 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-xl">history</span>
+</div>
+<div>
+<p class="text-white text-sm font-bold">Última alteração</p>
+<p class="text-slate-500 text-xs">Há 2 horas por Administrador</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="px-6 py-2 rounded-lg border border-slate-700 text-slate-300 text-sm font-bold hover:bg-slate-800 transition-all">Descartar</button>
+<button class="px-8 py-2 rounded-lg bg-primary text-white text-sm font-bold hover:bg-primary/90 transition-all shadow-lg shadow-primary/20">Publicar Alterações</button>
+</div>
+</footer>
+</main>
+</div>
+
+</body></html>

@@ -1,0 +1,305 @@
+<!DOCTYPE html>
+
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Dashboard Principal - Mercês Tênis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style>
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav {
+            background-color: #137fec;
+            color: white;
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex h-screen overflow-hidden">
+<!-- SideNavBar -->
+<aside class="w-64 flex-shrink-0 bg-[#0a0f14] border-r border-slate-800 flex flex-col justify-between p-4">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-primary rounded-lg p-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">sports_tennis</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-white text-base font-bold leading-none uppercase tracking-wider">Mercês Tênis</h1>
+<p class="text-slate-500 text-[10px] font-medium leading-normal">EVOLUTION API PANEL</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<p class="text-sm font-semibold">Início</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">person_search</span>
+<p class="text-sm font-semibold">Leads</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+<p class="text-sm font-semibold">IA</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">terminal</span>
+<p class="text-sm font-semibold">Instâncias</p>
+<div class="ml-auto w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+</div>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
+<p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-2">API Status</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-white">Evolution API</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase">Online</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-full w-[94%]"></div>
+</div>
+</div>
+<button class="flex w-full items-center justify-center gap-2 rounded-lg h-11 bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-sm">sync</span>
+<span class="truncate">Sync API</span>
+</button>
+</div>
+</aside>
+<!-- Main Content -->
+<main class="flex-1 flex flex-col overflow-y-auto">
+<!-- TopNavBar -->
+<header class="flex items-center justify-between border-b border-slate-800 bg-background-dark px-8 py-4 sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h2 class="text-white text-xl font-bold tracking-tight">Dashboard Principal</h2>
+</div>
+<div class="flex flex-1 justify-end items-center gap-6">
+<div class="relative max-w-xs w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">search</span>
+<input class="w-full bg-slate-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:ring-2 focus:ring-primary" placeholder="Pesquisar leads ou instâncias..." type="text"/>
+</div>
+<div class="flex items-center gap-3">
+<button class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors relative">
+<span class="material-symbols-outlined text-[22px]">notifications</span>
+<span class="absolute top-2 right-2 w-2 h-2 bg-red-500 rounded-full border-2 border-slate-800"></span>
+</button>
+<button class="p-2 rounded-lg bg-slate-800 text-slate-400 hover:text-white transition-colors">
+<span class="material-symbols-outlined text-[22px]">settings</span>
+</button>
+</div>
+<div class="flex items-center gap-3 pl-6 border-l border-slate-800">
+<div class="flex flex-col items-end">
+<span class="text-xs font-bold text-white leading-none">Administrador</span>
+<span class="text-[10px] text-slate-500 leading-normal">Evolution Admin</span>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-slate-700" data-alt="User avatar placeholder with abstract pattern" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuArjeAWTcPN9hblp2BuNMbz46gVXfDQ_E3sbG4-IcmLsZ-7kDafnnDDhHDuSFqgPZdKlafsbeKBvxks_gN8mD8Pb95-ZJK-u4rABxEXtM0aicN6o8JdMtQrd_SngmXFf1ekvSM7oSzUmLoqgpXfBGrTkgwFS7Gnj7jOe3dHEKUytVnxJk_6tSIorh_VcAYsqgKf3IDvq-8y1tUOXDAm83WgEUHRr01eSMckZv8QFIvoaHRkAqxr0y1t1t482wypBL01faaKivxuMyQ");'></div>
+</div>
+</div>
+</header>
+<div class="p-8 space-y-8">
+<!-- PageHeading -->
+<div class="flex flex-col gap-1">
+<h3 class="text-white text-3xl font-black leading-tight tracking-tight">Bem-vindo, Administrador</h3>
+<p class="text-slate-400 text-base font-normal">Acompanhe o desempenho da sua automação com IA em tempo real.</p>
+</div>
+<!-- Stats Cards -->
+<div class="grid grid-cols-1 md:grid-cols-3 gap-6">
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-slate-800/40 border border-slate-700/50 hover:border-primary/50 transition-colors group">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-primary/10 rounded-lg text-primary">
+<span class="material-symbols-outlined">group_add</span>
+</div>
+<span class="text-emerald-500 text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +12%
+                            </span>
+</div>
+<div>
+<p class="text-slate-400 text-sm font-medium">Total de Leads (Novos)</p>
+<p class="text-white text-3xl font-black mt-1">1,284</p>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-slate-800/40 border border-slate-700/50 hover:border-emerald-500/50 transition-colors group">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-emerald-500/10 rounded-lg text-emerald-500">
+<span class="material-symbols-outlined">chat_bubble</span>
+</div>
+<span class="text-emerald-500 text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_up</span> +5%
+                            </span>
+</div>
+<div>
+<p class="text-slate-400 text-sm font-medium">IA em Atendimento</p>
+<p class="text-white text-3xl font-black mt-1">842</p>
+</div>
+</div>
+<div class="flex flex-col gap-4 rounded-xl p-6 bg-slate-800/40 border border-slate-700/50 hover:border-orange-500/50 transition-colors group">
+<div class="flex justify-between items-start">
+<div class="p-2 bg-orange-500/10 rounded-lg text-orange-500">
+<span class="material-symbols-outlined">pause_circle</span>
+</div>
+<span class="text-orange-500 text-sm font-bold flex items-center gap-1">
+<span class="material-symbols-outlined text-sm">trending_down</span> -2%
+                            </span>
+</div>
+<div>
+<p class="text-slate-400 text-sm font-medium">IA Pausada/Manual</p>
+<p class="text-white text-3xl font-black mt-1">156</p>
+</div>
+</div>
+</div>
+<!-- Grid Charts & Activity -->
+<div class="grid grid-cols-1 lg:grid-cols-3 gap-6">
+<!-- Activity Graph -->
+<div class="lg:col-span-2 flex flex-col gap-2 rounded-xl border border-slate-700/50 bg-[#171e27] p-6">
+<div class="flex items-center justify-between mb-4">
+<div>
+<h4 class="text-white text-lg font-bold">Fluxo de Novos Contatos</h4>
+<p class="text-slate-400 text-xs">Volume de leads nos últimos 7 dias</p>
+</div>
+<div class="flex flex-col items-end">
+<p class="text-white text-2xl font-black">8,432</p>
+<p class="text-emerald-500 text-xs font-bold">+18% vs semana anterior</p>
+</div>
+</div>
+<div class="flex-1 flex flex-col gap-4">
+<svg fill="none" height="200" preserveaspectratio="none" viewbox="0 0 478 150" width="100%" xmlns="http://www.w3.org/2000/svg">
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25V150H0V109Z" fill="url(#gradient_bg)"></path>
+<path d="M0 109C18.1538 109 18.1538 21 36.3077 21C54.4615 21 54.4615 41 72.6154 41C90.7692 41 90.7692 93 108.923 93C127.077 93 127.077 33 145.231 33C163.385 33 163.385 101 181.538 101C199.692 101 199.692 61 217.846 61C236 61 236 45 254.154 45C272.308 45 272.308 121 290.462 121C308.615 121 308.615 149 326.769 149C344.923 149 344.923 1 363.077 1C381.231 1 381.231 81 399.385 81C417.538 81 417.538 129 435.692 129C453.846 129 453.846 25 472 25" stroke="#137fec" stroke-linecap="round" stroke-width="3"></path>
+<defs>
+<lineargradient gradientunits="userSpaceOnUse" id="gradient_bg" x1="236" x2="236" y1="1" y2="150">
+<stop stop-color="#137fec" stop-opacity="0.3"></stop>
+<stop offset="1" stop-color="#137fec" stop-opacity="0"></stop>
+</lineargradient>
+</defs>
+</svg>
+<div class="flex justify-between px-2">
+<p class="text-slate-500 text-[11px] font-bold uppercase tracking-wider">Seg</p>
+<p class="text-slate-500 text-[11px] font-bold uppercase tracking-wider">Ter</p>
+<p class="text-slate-500 text-[11px] font-bold uppercase tracking-wider">Qua</p>
+<p class="text-slate-500 text-[11px] font-bold uppercase tracking-wider">Qui</p>
+<p class="text-slate-500 text-[11px] font-bold uppercase tracking-wider">Sex</p>
+<p class="text-slate-500 text-[11px] font-bold uppercase tracking-wider">Sáb</p>
+<p class="text-slate-500 text-[11px] font-bold uppercase tracking-wider text-primary">Dom</p>
+</div>
+</div>
+</div>
+<!-- Recent Leads List -->
+<div class="flex flex-col gap-4 rounded-xl border border-slate-700/50 bg-[#171e27] p-6">
+<div class="flex items-center justify-between mb-2">
+<h4 class="text-white text-lg font-bold">Últimos Leads</h4>
+<button class="text-primary text-xs font-bold hover:underline">Ver todos</button>
+</div>
+<div class="flex flex-col divide-y divide-slate-700/50">
+<!-- Lead Item 1 -->
+<div class="py-3 flex items-center justify-between group">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-xs" data-alt="User initials avatar">RS</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-white group-hover:text-primary transition-colors">Ricardo Silva</p>
+<p class="text-[11px] text-slate-500">Há 5 minutos</p>
+</div>
+</div>
+<span class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-tighter">Novo Lead</span>
+</div>
+<!-- Lead Item 2 -->
+<div class="py-3 flex items-center justify-between group">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-xs" data-alt="User initials avatar">MA</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-white group-hover:text-primary transition-colors">Maria Almeida</p>
+<p class="text-[11px] text-slate-500">Há 12 minutos</p>
+</div>
+</div>
+<span class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-tighter">Novo Lead</span>
+</div>
+<!-- Lead Item 3 -->
+<div class="py-3 flex items-center justify-between group">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-xs" data-alt="User initials avatar">JP</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-white group-hover:text-primary transition-colors">João Paulo</p>
+<p class="text-[11px] text-slate-500">Há 24 minutos</p>
+</div>
+</div>
+<span class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-tighter">Novo Lead</span>
+</div>
+<!-- Lead Item 4 -->
+<div class="py-3 flex items-center justify-between group">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-xs" data-alt="User initials avatar">CS</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-white group-hover:text-primary transition-colors">Carla Souza</p>
+<p class="text-[11px] text-slate-500">Há 38 minutos</p>
+</div>
+</div>
+<span class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-tighter">Novo Lead</span>
+</div>
+<!-- Lead Item 5 -->
+<div class="py-3 flex items-center justify-between group">
+<div class="flex items-center gap-3">
+<div class="size-9 rounded-full bg-slate-700 flex items-center justify-center text-white font-bold text-xs" data-alt="User initials avatar">FR</div>
+<div class="flex flex-col">
+<p class="text-sm font-bold text-white group-hover:text-primary transition-colors">Felipe Rocha</p>
+<p class="text-[11px] text-slate-500">Há 1 hora</p>
+</div>
+</div>
+<span class="text-[10px] font-bold px-2 py-1 rounded bg-primary/10 text-primary border border-primary/20 uppercase tracking-tighter">Novo Lead</span>
+</div>
+</div>
+</div>
+</div>
+<!-- Action Bar (Internal Quick Actions) -->
+<div class="flex items-center justify-between bg-slate-800/20 border border-slate-700/50 rounded-xl p-6">
+<div class="flex items-center gap-4">
+<div class="size-12 rounded-full bg-primary/20 flex items-center justify-center">
+<span class="material-symbols-outlined text-primary text-2xl">rocket_launch</span>
+</div>
+<div>
+<h5 class="text-white font-bold">Gerenciamento de Fluxo</h5>
+<p class="text-slate-400 text-sm">Controle rápido da instância principal da Evolution API.</p>
+</div>
+</div>
+<div class="flex gap-3">
+<button class="flex items-center gap-2 px-5 py-2.5 bg-slate-700 hover:bg-slate-600 text-white rounded-lg text-sm font-bold transition-all">
+<span class="material-symbols-outlined text-sm">pause</span>
+                            Pausar Tudo
+                        </button>
+<button class="flex items-center gap-2 px-5 py-2.5 bg-emerald-600 hover:bg-emerald-500 text-white rounded-lg text-sm font-bold transition-all">
+<span class="material-symbols-outlined text-sm">play_arrow</span>
+                            Retomar Automação
+                        </button>
+</div>
+</div>
+</div>
+<footer class="mt-auto p-8 border-t border-slate-800 flex justify-between items-center text-slate-500 text-[11px] font-medium uppercase tracking-widest">
+<p>© 2024 Mercês Tênis - Todos os direitos reservados</p>
+<div class="flex gap-4">
+<a class="hover:text-white" href="#">Suporte</a>
+<a class="hover:text-white" href="#">Documentação API</a>
+<a class="hover:text-white" href="#">Privacidade</a>
+</div>
+</footer>
+</main>
+</div>
+</body></html>

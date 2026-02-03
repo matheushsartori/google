@@ -1,0 +1,82 @@
+generator client {
+  provider = "prisma-client-js"
+  binaryTargets = ["native", "windows"]
+}
+
+datasource db {
+  provider  = "postgresql"
+  url       = env("DATABASE_URL")
+  directUrl = env("DATABASE_URL_NO_ACCELERATE")
+}
+
+model User {
+  id       String  @id @default(uuid())
+  email    String  @unique
+  password String
+  name     String?
+}
+
+model Lead {
+  id        String    @id @default(uuid())
+  name      String?
+  phone     String    @unique
+  email     String?
+  status    String    @default("NEW")
+  createdAt DateTime  @default(now())
+  updatedAt DateTime  @updatedAt
+  activeBot Boolean   @default(true)
+  info      Json?
+  intent    String?
+  messages  Message[]
+}
+
+model Message {
+  id        String   @id @default(uuid())
+  content   String
+  sender    String
+  createdAt DateTime @default(now())
+  leadId    String
+  lead      Lead     @relation(fields: [leadId], references: [id])
+}
+
+model Settings {
+  id    String @id @default(uuid())
+  key   String @unique
+  value String
+}
+
+model KnowledgeBase {
+  id        String   @id @default(uuid())
+  tag       String   @unique
+  content   String
+  updatedAt DateTime @updatedAt
+}
+
+model ConnectionInstance {
+  id            String   @id @default(uuid())
+  name          String   @unique
+  instanceId    String   @unique
+  status        String   @default("DISCONNECTED")
+  version       String?
+  type          String?
+  lastSync      DateTime?
+  webhookStatus String?  @default("INACTIVE")
+  createdAt     DateTime @default(now())
+  updatedAt     DateTime @updatedAt
+}
+
+model TrialClass {
+  id            String    @id @default(uuid())
+  name          String
+  phone         String
+  sport         String    @default("Tênis")
+  level         String    // Iniciante, Intermediário, Avançado
+  availability  Json      // { days: [], period: "" }
+  observations  String?
+  status        String    @default("PENDING") // PENDING, CONFIRMED, CANCELLED, ARCHIVED
+  scheduledDate DateTime?
+  tags          String[]  @default([])
+  archived      Boolean   @default(false)
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
+}

@@ -1,0 +1,237 @@
+<!DOCTYPE html>
+<html class="dark" lang="pt-br"><head>
+<meta charset="utf-8"/>
+<meta content="width=device-width, initial-scale=1.0" name="viewport"/>
+<title>Instâncias API - Mercês Tênis</title>
+<script src="https://cdn.tailwindcss.com?plugins=forms,container-queries"></script>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700;800;900&amp;display=swap" rel="stylesheet"/>
+<link href="https://fonts.googleapis.com/css2?family=Material+Symbols+Outlined:wght,FILL@100..700,0..1&amp;display=swap" rel="stylesheet"/>
+<script id="tailwind-config">
+        tailwind.config = {
+            darkMode: "class",
+            theme: {
+                extend: {
+                    colors: {
+                        "primary": "#137fec",
+                        "background-light": "#f6f7f8",
+                        "background-dark": "#101922",
+                    },
+                    fontFamily: {
+                        "display": ["Inter", "sans-serif"]
+                    },
+                    borderRadius: { "DEFAULT": "0.25rem", "lg": "0.5rem", "xl": "0.75rem", "full": "9999px" },
+                },
+            },
+        }
+    </script>
+<style type="text/tailwindcss">
+        .material-symbols-outlined {
+            font-variation-settings: 'FILL' 0, 'wght' 400, 'GRAD' 0, 'opsz' 24;
+        }
+        .active-nav {
+            background-color: #137fec;
+            color: white;
+        }
+        .neon-status {
+            box-shadow: 0 0 12px rgba(16, 185, 129, 0.4);
+        }
+    </style>
+</head>
+<body class="bg-background-light dark:bg-background-dark font-display text-slate-900 dark:text-slate-100 antialiased">
+<div class="flex h-screen overflow-hidden">
+<aside class="w-64 flex-shrink-0 bg-[#0a0f14] border-r border-slate-800 flex flex-col justify-between p-4">
+<div class="flex flex-col gap-8">
+<div class="flex items-center gap-3 px-2">
+<div class="bg-primary rounded-lg p-2 flex items-center justify-center">
+<span class="material-symbols-outlined text-white">sports_tennis</span>
+</div>
+<div class="flex flex-col">
+<h1 class="text-white text-base font-bold leading-none uppercase tracking-wider">Mercês Tênis</h1>
+<p class="text-slate-500 text-[10px] font-medium leading-normal">EVOLUTION API PANEL</p>
+</div>
+</div>
+<nav class="flex flex-col gap-1">
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">dashboard</span>
+<p class="text-sm font-semibold">Início</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">person_search</span>
+<p class="text-sm font-semibold">Leads</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg hover:bg-slate-800 text-slate-400 hover:text-white transition-colors cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">smart_toy</span>
+<p class="text-sm font-semibold">IA</p>
+</div>
+<div class="flex items-center gap-3 px-3 py-2.5 rounded-lg active-nav cursor-pointer group">
+<span class="material-symbols-outlined text-[20px]">terminal</span>
+<p class="text-sm font-semibold">Instâncias</p>
+<div class="ml-auto w-2 h-2 rounded-full bg-emerald-500 shadow-[0_0_8px_rgba(16,185,129,0.6)]"></div>
+</div>
+</nav>
+</div>
+<div class="flex flex-col gap-4">
+<div class="bg-slate-800/40 rounded-xl p-4 border border-slate-700/50">
+<p class="text-[11px] text-slate-500 uppercase font-bold tracking-widest mb-2">API Status</p>
+<div class="flex items-center justify-between mb-1">
+<span class="text-xs text-white">Evolution API</span>
+<span class="text-[10px] px-1.5 py-0.5 rounded bg-emerald-500/20 text-emerald-400 font-bold uppercase">Online</span>
+</div>
+<div class="w-full bg-slate-700 h-1.5 rounded-full overflow-hidden">
+<div class="bg-emerald-500 h-full w-[94%]"></div>
+</div>
+</div>
+<button class="flex w-full items-center justify-center gap-2 rounded-lg h-11 bg-primary hover:bg-primary/90 text-white text-sm font-bold transition-all shadow-lg shadow-primary/20">
+<span class="material-symbols-outlined text-sm">sync</span>
+<span class="truncate">Sync API</span>
+</button>
+</div>
+</aside>
+<main class="flex-1 flex flex-col overflow-y-auto bg-background-dark">
+<header class="flex items-center justify-between border-b border-slate-800 bg-background-dark px-8 py-4 sticky top-0 z-10">
+<div class="flex items-center gap-4">
+<h2 class="text-white text-xl font-bold tracking-tight">Instâncias de Conexão</h2>
+</div>
+<div class="flex flex-1 justify-end items-center gap-6">
+<div class="relative max-w-xs w-full">
+<span class="material-symbols-outlined absolute left-3 top-1/2 -translate-y-1/2 text-slate-500 text-[20px]">search</span>
+<input class="w-full bg-slate-800 border-none rounded-lg py-2 pl-10 pr-4 text-sm text-white placeholder:text-slate-500 focus:ring-2 focus:ring-primary" placeholder="Procurar instância..." type="text"/>
+</div>
+<div class="flex items-center gap-3 pl-6 border-l border-slate-800">
+<div class="flex flex-col items-end">
+<span class="text-xs font-bold text-white leading-none">Administrador</span>
+<span class="text-[10px] text-slate-500 leading-normal">Evolution Admin</span>
+</div>
+<div class="bg-center bg-no-repeat aspect-square bg-cover rounded-full size-10 border-2 border-slate-700" style='background-image: url("https://lh3.googleusercontent.com/aida-public/AB6AXuArjeAWTcPN9hblp2BuNMbz46gVXfDQ_E3sbG4-IcmLsZ-7kDafnnDDhHDuSFqgPZdKlafsbeKBvxks_gN8mD8Pb95-ZJK-u4rABxEXtM0aicN6o8JdMtQrd_SngmXFf1ekvSM7oSzUmLoqgpXfBGrTkgwFS7Gnj7jOe3dHEKUytVnxJk_6tSIorh_VcAYsqgKf3IDvq-8y1tUOXDAm83WgEUHRr01eSMckZv8QFIvoaHRkAqxr0y1t1t482wypBL01faaKivxuMyQ");'></div>
+</div>
+</div>
+</header>
+<div class="p-8 max-w-5xl mx-auto w-full space-y-8">
+<div class="flex items-center gap-2 text-xs font-medium text-slate-500 uppercase tracking-widest">
+<span>Dashboard</span>
+<span class="material-symbols-outlined text-sm">chevron_right</span>
+<span class="text-primary">Instâncias</span>
+</div>
+<div class="grid grid-cols-1 lg:grid-cols-5 gap-8">
+<div class="lg:col-span-2 space-y-6">
+<div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl p-6">
+<div class="flex items-center justify-between mb-6">
+<div class="flex items-center gap-3">
+<div class="size-12 rounded-xl bg-primary/20 flex items-center justify-center text-primary">
+<span class="material-symbols-outlined text-2xl">sensors</span>
+</div>
+<div>
+<h3 class="text-white font-bold text-lg">Evolution_Main</h3>
+<p class="text-slate-500 text-xs tracking-wide">ID: merces_tenis_prod_01</p>
+</div>
+</div>
+<div class="flex flex-col items-end">
+<span class="neon-status px-3 py-1 rounded-full bg-emerald-500/10 text-emerald-400 text-[10px] font-black uppercase border border-emerald-500/30">Online</span>
+</div>
+</div>
+<div class="space-y-4">
+<div class="flex justify-between items-center py-3 border-b border-slate-700/50">
+<span class="text-slate-400 text-sm">Versão da API</span>
+<span class="text-white text-sm font-semibold">v1.6.2</span>
+</div>
+<div class="flex justify-between items-center py-3 border-b border-slate-700/50">
+<span class="text-slate-400 text-sm">Tipo de Conexão</span>
+<span class="text-white text-sm font-semibold">WhatsApp Business</span>
+</div>
+<div class="flex justify-between items-center py-3 border-b border-slate-700/50">
+<span class="text-slate-400 text-sm">Webhook Status</span>
+<span class="text-emerald-500 text-sm font-semibold flex items-center gap-1">
+<span class="material-symbols-outlined text-xs">check_circle</span> Ativo
+                                </span>
+</div>
+<div class="flex justify-between items-center py-3">
+<span class="text-slate-400 text-sm">Último Sync</span>
+<span class="text-white text-sm font-semibold">Há 2 minutos</span>
+</div>
+</div>
+</div>
+<div class="bg-slate-800/20 border border-slate-700/50 rounded-2xl p-6">
+<h4 class="text-white font-bold text-sm mb-4">Ações Rápidas</h4>
+<div class="grid grid-cols-2 gap-3">
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary">restart_alt</span>
+<span class="text-xs text-white font-bold">Reiniciar</span>
+</button>
+<button class="flex flex-col items-center justify-center gap-2 p-4 rounded-xl bg-slate-800 hover:bg-slate-700 border border-slate-700 transition-all group">
+<span class="material-symbols-outlined text-slate-400 group-hover:text-primary">settings_ethernet</span>
+<span class="text-xs text-white font-bold">Configurar</span>
+</button>
+</div>
+</div>
+</div>
+<div class="lg:col-span-3">
+<div class="bg-[#171e27] border border-slate-700/50 rounded-2xl p-8 h-full flex flex-col items-center justify-center text-center">
+<div class="mb-8">
+<h3 class="text-white text-2xl font-black mb-2 tracking-tight">Escaneie o QR Code</h3>
+<p class="text-slate-400 text-sm max-w-sm">Conecte sua conta do WhatsApp para iniciar a automação com a inteligência artificial.</p>
+</div>
+<div class="relative group">
+<div class="absolute -top-4 -left-4 w-8 h-8 border-t-2 border-l-2 border-primary rounded-tl-lg"></div>
+<div class="absolute -top-4 -right-4 w-8 h-8 border-t-2 border-right-2 border-primary rounded-tr-lg border-r-2"></div>
+<div class="absolute -bottom-4 -left-4 w-8 h-8 border-b-2 border-l-2 border-primary rounded-bl-lg"></div>
+<div class="absolute -bottom-4 -right-4 w-8 h-8 border-b-2 border-r-2 border-primary rounded-br-lg"></div>
+<div class="bg-white p-6 rounded-xl shadow-2xl shadow-primary/10">
+<div class="w-64 h-64 bg-slate-100 flex items-center justify-center relative overflow-hidden">
+<div class="absolute inset-0 opacity-10" style="background-image: radial-gradient(#000 2px, transparent 2px); background-size: 10px 10px;"></div>
+<span class="material-symbols-outlined text-slate-300 text-8xl">qr_code_2</span>
+<div class="absolute left-0 right-0 h-0.5 bg-primary/40 top-1/4"></div>
+</div>
+</div>
+</div>
+<div class="mt-12 flex gap-4 w-full max-w-sm">
+<button class="flex-1 flex items-center justify-center gap-2 h-12 bg-slate-800 hover:bg-slate-700 text-white rounded-xl text-sm font-bold border border-slate-700 transition-all">
+<span class="material-symbols-outlined text-lg">sync</span>
+                                Sincronizar
+                            </button>
+<button class="flex-1 flex items-center justify-center gap-2 h-12 bg-red-500/10 hover:bg-red-500/20 text-red-500 rounded-xl text-sm font-bold border border-red-500/30 transition-all">
+<span class="material-symbols-outlined text-lg">logout</span>
+                                Desconectar
+                            </button>
+</div>
+<p class="mt-6 text-slate-500 text-[10px] font-bold uppercase tracking-[0.2em]">O QR Code atualiza automaticamente a cada 60s</p>
+</div>
+</div>
+</div>
+<div class="bg-slate-800/40 border border-slate-700/50 rounded-2xl overflow-hidden">
+<div class="px-6 py-4 border-b border-slate-700/50 flex items-center justify-between">
+<h4 class="text-white font-bold text-sm">Logs da Instância</h4>
+<span class="text-primary text-xs font-bold cursor-pointer hover:underline">Limpar Logs</span>
+</div>
+<div class="p-2">
+<div class="space-y-1 font-mono text-[11px]">
+<div class="p-2 rounded bg-slate-900/50 flex gap-4">
+<span class="text-slate-500">[14:32:01]</span>
+<span class="text-emerald-400 uppercase font-bold">Success</span>
+<span class="text-slate-300">Conexão estabelecida com sucesso via WebSocket.</span>
+</div>
+<div class="p-2 rounded flex gap-4">
+<span class="text-slate-500">[14:30:45]</span>
+<span class="text-primary uppercase font-bold">Info</span>
+<span class="text-slate-300">Gerando novo par de chaves para autenticação da Evolution API.</span>
+</div>
+<div class="p-2 rounded bg-slate-900/50 flex gap-4">
+<span class="text-slate-500">[14:28:12]</span>
+<span class="text-orange-400 uppercase font-bold">Warning</span>
+<span class="text-slate-300">Tentativa de conexão pendente - Aguardando leitura do QR Code.</span>
+</div>
+</div>
+</div>
+</div>
+</div>
+<footer class="mt-auto p-8 border-t border-slate-800 flex justify-between items-center text-slate-500 text-[11px] font-medium uppercase tracking-widest">
+<p>© 2024 Mercês Tênis - Todos os direitos reservados</p>
+<div class="flex gap-4">
+<a class="hover:text-white" href="#">Suporte</a>
+<a class="hover:text-white" href="#">Documentação API</a>
+<a class="hover:text-white" href="#">Privacidade</a>
+</div>
+</footer>
+</main>
+</div>
+
+</body></html>
