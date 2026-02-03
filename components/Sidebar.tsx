@@ -74,6 +74,11 @@ export function Sidebar() {
                         </div>
                     </Link>
 
+                    <Link href="/logs" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer group ${isActive("/logs")}`}>
+                        <span className="material-symbols-outlined text-[20px]">description</span>
+                        <p className="text-sm font-semibold">Logs</p>
+                    </Link>
+
                     <Link href="/settings" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer group ${isActive("/settings")}`}>
                         <span className="material-symbols-outlined text-[20px]">settings</span>
                         <p className="text-sm font-semibold">Configurações</p>

@@ -2,8 +2,8 @@
 
 import { useEffect, useState } from "react";
 import axios from "axios";
-import Sidebar from "@/components/Sidebar";
-import Header from "@/components/Header";
+import { Sidebar } from "@/components/Sidebar";
+import { Header } from "@/components/Header";
 import { toast, Toaster } from "react-hot-toast";
 
 interface WebhookLog {
