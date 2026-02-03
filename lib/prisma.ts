@@ -1,5 +1,5 @@
 import { PrismaClient } from "@prisma/client";
-// Reload signal 3
+// Reload signal 4 - WebhookLog model added
 
 const prismaClientSingleton = () => {
     return new PrismaClient({
