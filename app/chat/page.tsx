@@ -117,22 +117,19 @@ function ChatContent() {
         const txt = msgInput;
         setMsgInput(""); // Optimistic clear
 
-        // Optimistic add (optional, but safer to wait for refresh for now to avoid duplications if polling hits same time)
-        // For simplicity, just send and re-fetch
         try {
-            // Need an endpoint to send message. 
-            // Assuming we can define one or use specific instance logic.
-            // For now, let's assume we implement a send route or just log it is missing.
-            // Wait, we don't have a direct /api/chat/send route? 
-            // We likely need to use the instance directly or a new route.
-            console.log("Sending message...", txt);
+            await axios.post('/api/chat/send', {
+                leadId: selectedLead.id,
+                content: txt
+            });
 
-            // TODO: Implement actual send
-            // await axios.post('/api/messages/send', { leadId: selectedLead.id, content: txt });
-            // fetchSelectedLead(selectedLead.id);
+            // Refresh to see the new message
+            fetchSelectedLead(selectedLead.id);
 
         } catch (error) {
             console.error("Failed to send", error);
+            alert("Falha ao enviar mensagem. Verifique se há uma instância conectada.");
+            setMsgInput(txt);
         }
     };
 
@@ -225,8 +222,8 @@ function ChatContent() {
                             </div>
                             <div className="flex items-center gap-3">
                                 <div className={`px-3 py-1 rounded-full border text-[10px] font-bold uppercase tracking-widest ${selectedLead.status === 'NEW' ? 'bg-blue-500/10 text-blue-400 border-blue-500/20' :
-                                        selectedLead.status === 'IN_PROGRESS' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
-                                            'bg-slate-800 text-slate-400 border-slate-700'
+                                    selectedLead.status === 'IN_PROGRESS' ? 'bg-emerald-500/10 text-emerald-400 border-emerald-500/20' :
+                                        'bg-slate-800 text-slate-400 border-slate-700'
                                     }`}>
                                     {selectedLead.status}
                                 </div>
@@ -241,12 +238,22 @@ function ChatContent() {
                                             msg.sender === 'USER' ? 'bg-slate-800 border border-slate-700 rounded-tr-sm' :
                                                 'bg-[#1f2937] border border-slate-700/50 rounded-tl-sm'
                                         }`}>
-                                        {msg.sender === 'IA' && (
+                                        {/* Automation Label */}
+                                        {(msg.sender === 'IA' || msg.sender === 'BOT') && (
                                             <div className="flex items-center gap-1.5 mb-1.5 border-b border-[#d4af37]/10 pb-1">
                                                 <span className="material-symbols-outlined text-[12px] text-[#d4af37]">smart_toy</span>
-                                                <span className="text-[9px] font-black text-[#d4af37] uppercase tracking-wider">Evolution AI</span>
+                                                <span className="text-[9px] font-black text-[#d4af37] uppercase tracking-wider">Automação</span>
                                             </div>
                                         )}
+
+                                        {/* Human Label */}
+                                        {msg.sender === 'USER' && (
+                                            <div className="flex items-center gap-1.5 mb-1.5 border-b border-slate-700/50 pb-1">
+                                                <span className="material-symbols-outlined text-[12px] text-blue-400">person</span>
+                                                <span className="text-[9px] font-black text-blue-400 uppercase tracking-wider">Atendente</span>
+                                            </div>
+                                        )}
+
                                         <p className="text-slate-200 text-sm leading-relaxed whitespace-pre-wrap">{msg.content}</p>
                                         <div className="flex justify-end mt-1.5 opacity-50">
                                             <span className="text-[9px] text-slate-400 font-mono">
