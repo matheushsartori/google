@@ -22,8 +22,8 @@ export default function FlowPage() {
                 const data = res.data;
 
                 setMsg1(data.FLOW_MSG_1 || "🎾 Olá! O Mercês Tênis agradece seu contato 😊\n\nPara locações avulsas de quadras de Tênis e Beach Tennis, basta acessar o link abaixo e fazer sua reserva:\n👉 https://letzplay.me/mercestenis/location");
-                setMsg2(data.FLOW_MSG_2 || "🏫 Aula experimental\nPara agendar sua aula experimental:\n1️⃣ Preencha seus dados no link: {LINK_AULA}\n2️⃣ Envie por aqui o comprovante de pagamento via PIX:\n💰 Chave PIX: 41 98751-8619\n\n📚 Valores das aulas (plano anual)\n🎾 Tênis: a partir de R$ 340 — 1x por semana\n🏖️ Beach Tennis: R$ 280 — 1x por semana");
-                setMsg3(data.FLOW_MSG_3 || "📄 Para conferir todos os valores, planos e regulamento to te enviando aqui abaixo o nosso pdf");
+                setMsg2(data.FLOW_MSG_2 || "🏫 A Aula experimental de tênis  ou beach tennis custa r$ 80,00.\nPara agendar sua aula experimental:\n1️⃣ Envie por aqui o comprovante de pagamento via\n💰 Chave PIX: 41 98751-8619\n2. Preencha o formulário do link {LINK_AULA}.  Receba a data e hora da sua aula teste pelo WhatsApp em até 24 hs no máximo. \n\n📚 Valores das aulas (plano anual)\n🎾 Tênis: a partir de R$ 340 — 1x por semana\n🏖️ Beach Tennis: R$ 280 — 1x por semana");
+                setMsg3(data.FLOW_MSG_3 || "📄 Para conferir todos os valores, planos e regulamento, acesse o link ou solicite o PDF informativo");
                 setIntervalVal(data.FLOW_INTERVAL || "5");
             } catch (error) {
                 console.error("Failed to load settings", error);

@@ -93,7 +93,7 @@ export default function PublicTrialClassPage() {
                     </div>
                     <div className="pt-2">
                         <p className="text-[10px] font-black uppercase tracking-[0.2em] text-slate-500 mb-2">Valor da Aula</p>
-                        <p className="text-4xl font-black text-primary">R$ 100</p>
+                        <p className="text-4xl font-black text-primary">R$ 80</p>
                     </div>
                     <button
                         onClick={() => window.location.href = "https://wa.me/41987518619"}
@@ -300,7 +300,7 @@ export default function PublicTrialClassPage() {
                         </div>
                         <div>
                             <p className="text-[10px] font-bold text-slate-500 uppercase tracking-widest leading-none mb-1">Valor da Aula</p>
-                            <p className="text-xl font-black text-white italic tracking-tighter">R$ 100,00</p>
+                            <p className="text-xl font-black text-white italic tracking-tighter">R$ 80,00</p>
                         </div>
                     </div>
                     <p className="text-[10px] text-slate-600 font-medium text-center md:text-right max-w-[240px]">
