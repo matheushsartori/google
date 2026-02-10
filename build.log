@@ -17,3 +17,59 @@ Tip: Need your database queries to be 1000x faster? Accelerate offers you that a
 Ô£ô Compiled successfully in 5.4s
   Running TypeScript ...
   Collecting page data using 7 workers ...
+  Generating static pages using 7 workers (0/32) ...
+  Generating static pages using 7 workers (8/32) 
+  Generating static pages using 7 workers (16/32) 
+  Generating static pages using 7 workers (24/32) 
+Ô£ô Generating static pages using 7 workers (32/32) in 1003.1ms
+  Finalizing page optimization ...
+
+Route (app)
+Ôöî Ôùï /
+Ôö£ Ôùï /_not-found
+Ôö£ ãÆ /api/ai-test
+Ôö£ ãÆ /api/auth/[...nextauth]
+Ôö£ ãÆ /api/automation-logs
+Ôö£ ãÆ /api/automations
+Ôö£ ãÆ /api/chat/send
+Ôö£ ãÆ /api/courts
+Ôö£ ãÆ /api/courts/[id]
+Ôö£ ãÆ /api/dashboard
+Ôö£ ãÆ /api/instances
+Ôö£ ãÆ /api/instances/[name]
+Ôö£ ãÆ /api/instances/[name]/connect
+Ôö£ ãÆ /api/instances/[name]/logout
+Ôö£ ãÆ /api/instances/[name]/restart
+Ôö£ ãÆ /api/instances/[name]/sync
+Ôö£ ãÆ /api/instances/[name]/webhook
+Ôö£ ãÆ /api/leads
+Ôö£ ãÆ /api/leads/[id]
+Ôö£ ãÆ /api/marcar-aula
+Ôö£ ãÆ /api/marcar-aula/update-status
+Ôö£ ãÆ /api/settings
+Ôö£ ãÆ /api/teachers
+Ôö£ ãÆ /api/teachers/[id]
+Ôö£ ãÆ /api/verify-token
+Ôö£ ãÆ /api/webhook
+Ôö£ ãÆ /api/webhook-logs
+Ôö£ Ôùï /aulas-experimentais
+Ôö£ Ôùï /automacoes
+Ôö£ Ôùï /chat
+Ôö£ Ôùï /fluxo
+Ôö£ Ôùï /ia-config
+Ôö£ Ôùï /ia-test
+Ôö£ Ôùï /instances
+Ôö£ Ôùï /leads
+Ôö£ Ôùï /login
+Ôö£ Ôùï /logs
+Ôö£ Ôùï /marcar-aula
+Ôö£ Ôùï /professores
+Ôö£ Ôùï /quadras
+Ôöö Ôùï /settings
+
+
+ãÆ Proxy (Middleware)
+
+Ôùï  (Static)   prerendered as static content
+ãÆ  (Dynamic)  server-rendered on demand
+
