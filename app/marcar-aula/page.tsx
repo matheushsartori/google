@@ -41,7 +41,6 @@ export default function PublicTrialClassPage() {
     const handlePhoneChange = (e: React.ChangeEvent<HTMLInputElement>) => {
         const input = e.target.value;
         const numbers = input.replace(/\D/g, "");
-
         let masked = "";
         if (numbers.length > 0) {
             masked = "(" + numbers.substring(0, 2);
@@ -55,8 +54,33 @@ export default function PublicTrialClassPage() {
         setPhone(masked);
     };
 
+    const handleCpfChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const input = e.target.value;
+        const numbers = input.replace(/\D/g, "");
+        let masked = "";
+        if (numbers.length > 0) {
+            masked = numbers.substring(0, 3);
+            if (numbers.length > 3) masked += "." + numbers.substring(3, 6);
+            if (numbers.length > 6) masked += "." + numbers.substring(6, 9);
+            if (numbers.length > 9) masked += "-" + numbers.substring(9, 11);
+        }
+        setCpf(masked);
+    };
+
+    const handleBirthDateChange = (e: React.ChangeEvent<HTMLInputElement>) => {
+        const input = e.target.value;
+        const numbers = input.replace(/\D/g, "");
+        let masked = "";
+        if (numbers.length > 0) {
+            masked = numbers.substring(0, 2);
+            if (numbers.length > 2) masked += "/" + numbers.substring(2, 4);
+            if (numbers.length > 4) masked += "/" + numbers.substring(4, 8);
+        }
+        setBirthDate(masked);
+    };
+
     const handleSubmit = async () => {
-        if (!name || !phone || !level || selectedDays.length === 0 || !period) {
+        if (!name || !phone || !email || !cpf || !birthDate || !level || selectedDays.length === 0 || !period) {
             toast.error("Por favor, preencha todos os campos obrigatórios.");
             return;
         }
@@ -188,29 +212,30 @@ export default function PublicTrialClassPage() {
                                         placeholder="seu@email.com"
                                     />
                                 </div>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">CPF</label>
-                                        <input
-                                            value={cpf}
-                                            onChange={(e) => setCpf(e.target.value)}
-                                            className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
-                                            placeholder="000.000.000-00"
-                                        />
-                                    </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data Nasc.</label>
-                                        <input
-                                            type="date"
-                                            value={birthDate}
-                                            onChange={(e) => setBirthDate(e.target.value)}
-                                            className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
-                                        />
-                                    </div>
+                                <div className="space-y-2 col-span-full">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">CPF</label>
+                                    <input
+                                        value={cpf}
+                                        onChange={handleCpfChange}
+                                        className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                                        placeholder="000.000.000-00"
+                                        maxLength={14}
+                                    />
+                                </div>
+                                <div className="space-y-2 col-span-full">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data de Nascimento</label>
+                                    <input
+                                        type="text"
+                                        value={birthDate}
+                                        onChange={handleBirthDateChange}
+                                        className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                                        placeholder="DD/MM/AAAA"
+                                        maxLength={10}
+                                    />
                                 </div>
                             </div>
                             <button
-                                onClick={() => name && phone ? setStep(2) : toast.error("Preencha seu nome e telefone.")}
+                                onClick={() => (name && phone && email && cpf && birthDate) ? setStep(2) : toast.error("Preencha todos os campos para continuar.")}
                                 className="w-full bg-primary hover:bg-primary/90 text-white h-16 rounded-2xl font-black uppercase text-xs tracking-widest transition-all flex items-center justify-center gap-2 group shadow-xl shadow-primary/20"
                             >
                                 Próximo Passo

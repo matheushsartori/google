@@ -21,6 +21,7 @@ interface Lead {
     updatedAt: string;
     messages: Message[];
     time?: string; // from list api
+    trialClass?: any; // linked CRM data
 }
 
 export default function ChatPage() {
@@ -235,8 +236,8 @@ function ChatContent() {
                             {selectedLead.messages?.map((msg) => (
                                 <div key={msg.id} className={`flex flex-col ${msg.sender === 'IA' || msg.sender === 'USER' || msg.sender === 'BOT' ? 'items-end' : 'items-start'}`}>
                                     <div className={`max-w-[70%] rounded-2xl p-4 shadow-sm ${msg.sender === 'IA' || msg.sender === 'BOT' ? 'bg-[#d4af37]/10 border border-[#d4af37]/20 rounded-tr-sm' :
-                                            msg.sender === 'USER' ? 'bg-slate-800 border border-slate-700 rounded-tr-sm' :
-                                                'bg-[#1f2937] border border-slate-700/50 rounded-tl-sm'
+                                        msg.sender === 'USER' ? 'bg-slate-800 border border-slate-700 rounded-tr-sm' :
+                                            'bg-[#1f2937] border border-slate-700/50 rounded-tl-sm'
                                         }`}>
                                         {/* Automation Label */}
                                         {(msg.sender === 'IA' || msg.sender === 'BOT') && (
@@ -327,6 +328,51 @@ function ChatContent() {
                                 {selectedLead.intent || 'Indefinido'}
                             </span>
                         </div>
+
+                        {/* Trial Class / CRM Link */}
+                        {selectedLead.trialClass && (
+                            <div className="pt-4 border-t border-slate-800/50">
+                                <h4 className="text-primary text-[10px] font-black uppercase tracking-[0.2em] mb-3">Aula Experimental</h4>
+                                <div className="bg-primary/5 border border-primary/20 rounded-2xl p-4 space-y-3">
+                                    <div className="flex justify-between items-center">
+                                        <span className={`text-[9px] font-black px-2 py-0.5 rounded-full border ${selectedLead.trialClass.status === 'PENDING' ? 'text-amber-400 border-amber-500/20 bg-amber-500/5' :
+                                                selectedLead.trialClass.status === 'CONFIRMED' ? 'text-primary border-primary/20 bg-primary/5' :
+                                                    selectedLead.trialClass.status === 'COMPLETED' ? 'text-emerald-400 border-emerald-500/20 bg-emerald-500/5' :
+                                                        selectedLead.trialClass.status === 'CONVERTED' ? 'text-pink-400 border-pink-500/20 bg-pink-500/5' :
+                                                            'text-red-400 border-red-500/20'
+                                            }`}>
+                                            {selectedLead.trialClass.status}
+                                        </span>
+                                        <span className="text-[9px] text-slate-500 font-bold uppercase">{selectedLead.trialClass.sport}</span>
+                                    </div>
+
+                                    {selectedLead.trialClass.scheduledDate ? (
+                                        <div className="space-y-2">
+                                            <div className="flex items-center gap-2">
+                                                <span className="material-symbols-outlined text-[14px] text-primary">calendar_today</span>
+                                                <p className="text-[11px] font-bold text-white">
+                                                    {new Date(selectedLead.trialClass.scheduledDate).toLocaleDateString('pt-BR')} às {new Date(selectedLead.trialClass.scheduledDate).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}
+                                                </p>
+                                            </div>
+                                            {selectedLead.trialClass.teacher && (
+                                                <div className="flex items-center gap-2">
+                                                    <span className="material-symbols-outlined text-[14px] text-emerald-400">school</span>
+                                                    <p className="text-[10px] text-slate-300 font-medium">Prof. {selectedLead.trialClass.teacher.name}</p>
+                                                </div>
+                                            )}
+                                            {selectedLead.trialClass.court && (
+                                                <div className="flex items-center gap-2">
+                                                    <div className="size-2 rounded-full" style={{ backgroundColor: selectedLead.trialClass.court.color }}></div>
+                                                    <p className="text-[10px] text-slate-300 font-medium">{selectedLead.trialClass.court.name}</p>
+                                                </div>
+                                            )}
+                                        </div>
+                                    ) : (
+                                        <p className="text-[10px] text-slate-500 italic">Aula ainda não agendada</p>
+                                    )}
+                                </div>
+                            </div>
+                        )}
                     </div>
                 </div>
             )}

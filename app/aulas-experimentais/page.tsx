@@ -40,6 +40,7 @@ export default function TrialClassesAdminPage() {
     const [filterPeriod, setFilterPeriod] = useState("all");
     const [showArchived, setShowArchived] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
+    const [filterCourt, setFilterCourt] = useState("");
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [dragOverCol, setDragOverCol] = useState<string | null>(null);
 
@@ -68,6 +69,29 @@ export default function TrialClassesAdminPage() {
     const [teachers, setTeachers] = useState<any[]>([]);
     const [courts, setCourts] = useState<any[]>([]);
     const [automations, setAutomations] = useState<any[]>([]);
+
+    const handleCpfChange = (val: string) => {
+        const numbers = val.replace(/\D/g, "");
+        let masked = "";
+        if (numbers.length > 0) {
+            masked = numbers.substring(0, 3);
+            if (numbers.length > 3) masked += "." + numbers.substring(3, 6);
+            if (numbers.length > 6) masked += "." + numbers.substring(6, 9);
+            if (numbers.length > 9) masked += "-" + numbers.substring(9, 11);
+        }
+        setEditCpf(masked);
+    };
+
+    const handleBirthDateChangeMask = (val: string) => {
+        const numbers = val.replace(/\D/g, "");
+        let masked = "";
+        if (numbers.length > 0) {
+            masked = numbers.substring(0, 2);
+            if (numbers.length > 2) masked += "/" + numbers.substring(2, 4);
+            if (numbers.length > 4) masked += "/" + numbers.substring(4, 8);
+        }
+        setEditBirthDate(masked);
+    };
 
     const fetchLookups = async () => {
         try {
@@ -138,7 +162,7 @@ export default function TrialClassesAdminPage() {
         setEditEmail(reg.email || "");
         setEditCpf(reg.cpf || "");
         setEditBirthDate(reg.birthDate || "");
-        setIsConverted(reg.isConverted || false);
+        setIsConverted(reg.isConverted || reg.status === 'CONVERTED');
         setIsModalOpen(true);
     };
 
@@ -181,7 +205,10 @@ export default function TrialClassesAdminPage() {
                 await axios.post("/api/chat/send", {
                     instanceName: instance.name,
                     number: teacher.phone,
-                    text: buildMessage(automation.teacherMsg, reg, teacherId, courtId, date)
+                    text: buildMessage(automation.teacherMsg, reg, teacherId, courtId, date),
+                    automationType: "TEACHER",
+                    stage: stage,
+                    targetName: teacher.name
                 });
                 toast.success(`Mensagem enviada para o professor ${teacher.name}`);
             }
@@ -190,7 +217,10 @@ export default function TrialClassesAdminPage() {
                 await axios.post("/api/chat/send", {
                     instanceName: instance.name,
                     number: reg.phone,
-                    text: buildMessage(automation.studentMsg, reg, teacherId, courtId, date)
+                    text: buildMessage(automation.studentMsg, reg, teacherId, courtId, date),
+                    automationType: "STUDENT",
+                    stage: stage,
+                    targetName: reg.name
                 });
                 toast.success(`Mensagem enviada para o aluno ${reg.name}`);
             }
@@ -271,14 +301,22 @@ export default function TrialClassesAdminPage() {
         const regDate = new Date(reg.createdAt);
         const now = new Date();
         if (filterPeriod === "today") {
-            return regDate.toDateString() === now.toDateString();
+            const today = regDate.toDateString() === now.toDateString();
+            if (!today) return false;
         } else if (filterPeriod === "week") {
             const oneWeekAgo = new Date();
             oneWeekAgo.setDate(now.getDate() - 7);
-            return regDate >= oneWeekAgo;
+            if (regDate < oneWeekAgo) return false;
         } else if (filterPeriod === "month") {
-            return regDate.getMonth() === now.getMonth() && regDate.getFullYear() === now.getFullYear();
+            const sameMonth = regDate.getMonth() === now.getMonth() && regDate.getFullYear() === now.getFullYear();
+            if (!sameMonth) return false;
         }
+
+        const matchesCourt = !filterCourt || reg.courtId === filterCourt;
+        if (!matchesCourt) return false;
+
+        const matchesLevel = !filterLevel || reg.level === filterLevel;
+        if (!matchesLevel) return false;
 
         return true;
     });
@@ -287,6 +325,7 @@ export default function TrialClassesAdminPage() {
         { id: "PENDING", title: "Novos Leads", icon: "inbox", color: "text-amber-400" },
         { id: "CONFIRMED", title: "Agendados", icon: "calendar_month", color: "text-primary" },
         { id: "COMPLETED", title: "Realizados", icon: "task_alt", color: "text-emerald-400" },
+        { id: "CONVERTED", title: "Fechados", icon: "stars", color: "text-pink-400" },
         { id: "CANCELLED", title: "Cancelados", icon: "cancel", color: "text-red-400" }
     ];
 
@@ -332,6 +371,16 @@ export default function TrialClassesAdminPage() {
                             <option value="today">Hoje</option>
                             <option value="week">Últimos 7 dias</option>
                             <option value="month">Este Mês</option>
+                        </select>
+                        <select
+                            value={filterCourt}
+                            onChange={(e) => setFilterCourt(e.target.value)}
+                            className="bg-slate-900 border border-slate-800 rounded-xl px-4 py-2 text-[10px] font-black text-white hover:border-slate-700 outline-none"
+                        >
+                            <option value="">Todas as Quadras</option>
+                            {courts.map(c => (
+                                <option key={c.id} value={c.id}>{c.name}</option>
+                            ))}
                         </select>
                         <select
                             value={filterLevel}
@@ -385,7 +434,7 @@ export default function TrialClassesAdminPage() {
                                             // Optimistic Update
                                             optimisticUpdateStatus(draggedId, col.id);
 
-                                            if (col.id === 'CONFIRMED' || col.id === 'COMPLETED') {
+                                            if (col.id === 'CONFIRMED' || col.id === 'COMPLETED' || col.id === 'CONVERTED') {
                                                 handleOpenModal({ ...reg, status: col.id });
                                             } else {
                                                 updateRegistration(draggedId, { status: col.id }, true);
@@ -460,7 +509,7 @@ export default function TrialClassesAdminPage() {
                                                             reg.status === 'COMPLETED' ? 'text-emerald-400 border-emerald-500/20' :
                                                                 'text-red-400 border-red-500/20'
                                                         }`}>
-                                                        {reg.status === 'COMPLETED' ? 'REALIZADO' : reg.status === 'CONFIRMED' ? 'AGENDADO' : reg.status === 'PENDING' ? 'PENDENTE' : 'CANCELADO'}
+                                                        {reg.status === 'CONVERTED' ? 'FECHADO' : reg.status === 'COMPLETED' ? 'REALIZADO' : reg.status === 'CONFIRMED' ? 'AGENDADO' : reg.status === 'PENDING' ? 'PENDENTE' : 'CANCELADO'}
                                                     </span>
                                                     <div className="flex flex-wrap gap-1">
                                                         {reg.tags.map(t => (
@@ -509,301 +558,341 @@ export default function TrialClassesAdminPage() {
                 </div>
 
                 {/* Scheduling Modal */}
-                {isModalOpen && (
-                    <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-sm bg-black/60 animate-in fade-in duration-300">
-                        <div className="bg-[#161b22] border border-slate-800 rounded-[40px] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
-                            <div className="p-8 border-b border-slate-800 bg-[#1c222c]">
-                                <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">
-                                    {modalStatus === "COMPLETED" ? "Concluir Aula" : "Agendar Aula"}
-                                </h3>
-                                <div className="flex flex-col">
-                                    <p className="text-slate-400 text-sm font-medium">Configure os detalhes da aula para <span className="text-primary font-bold">{selectedReg?.name}</span></p>
+                {
+                    isModalOpen && (
+                        <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-sm bg-black/60 animate-in fade-in duration-300">
+                            <div className="bg-[#161b22] border border-slate-800 rounded-[40px] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                                <div className="p-8 border-b border-slate-800 bg-[#1c222c]">
+                                    <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">
+                                        {modalStatus === "COMPLETED" ? "Concluir Aula" : "Agendar Aula"}
+                                    </h3>
+                                    <div className="flex flex-col">
+                                        <p className="text-slate-400 text-sm font-medium">Configure os detalhes da aula para <span className="text-primary font-bold">{selectedReg?.name}</span></p>
+                                    </div>
                                 </div>
-                            </div>
-                            <div className="p-8 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                                <div className="space-y-4 bg-slate-900/40 p-5 rounded-3xl border border-slate-800/50 mb-4">
-                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Informações do Aluno</p>
+                                <div className="p-8 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                    <div className="space-y-4 bg-slate-900/40 p-5 rounded-3xl border border-slate-800/50 mb-4">
+                                        <p className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Informações do Aluno</p>
 
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail</label>
-                                        <input
-                                            type="email"
-                                            value={editEmail}
-                                            onChange={(e) => setEditEmail(e.target.value)}
-                                            className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
-                                            placeholder="seu@email.com"
-                                        />
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail</label>
+                                            <input
+                                                type="email"
+                                                value={editEmail}
+                                                onChange={(e) => setEditEmail(e.target.value)}
+                                                className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
+                                                placeholder="seu@email.com"
+                                            />
+                                        </div>
+
+                                        <div className="grid grid-cols-2 gap-4">
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">CPF</label>
+                                                <input
+                                                    value={editCpf}
+                                                    onChange={(e) => handleCpfChange(e.target.value)}
+                                                    className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
+                                                    placeholder="000.000.000-00"
+                                                    maxLength={14}
+                                                />
+                                            </div>
+                                            <div className="space-y-2">
+                                                <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Data Nasc.</label>
+                                                <input
+                                                    type="text"
+                                                    value={editBirthDate}
+                                                    onChange={(e) => handleBirthDateChangeMask(e.target.value)}
+                                                    className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
+                                                    placeholder="DD/MM/AAAA"
+                                                    maxLength={10}
+                                                />
+                                            </div>
+                                        </div>
+                                        <button
+                                            onClick={handleSaveStudentData}
+                                            className="w-full h-10 border border-slate-700 hover:border-primary/50 text-slate-400 hover:text-primary transition-all rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 mt-2"
+                                        >
+                                            <span className="material-symbols-outlined text-sm">save</span>
+                                            Salvar Apenas Dados do Aluno
+                                        </button>
+
+                                        <label className="flex items-center gap-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl cursor-pointer group hover:bg-emerald-500/20 transition-all mt-4">
+                                            <div className={`size-6 rounded-lg border-2 flex items-center justify-center transition-all ${isConverted ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 bg-slate-900'}`}>
+                                                {isConverted && <span className="material-symbols-outlined text-[16px] font-black">check</span>}
+                                            </div>
+                                            <input
+                                                type="checkbox"
+                                                className="hidden"
+                                                checked={isConverted}
+                                                onChange={(e) => setIsConverted(e.target.checked)}
+                                            />
+                                            <div className="flex flex-col">
+                                                <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Converter em Aluno</span>
+                                                <span className="text-[8px] text-slate-500 font-bold">Marque se o aluno fechou o plano</span>
+                                            </div>
+                                        </label>
                                     </div>
 
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest ml-1 mt-6">Agendamento</p>
                                     <div className="grid grid-cols-2 gap-4">
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">CPF</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Data da Aula</label>
                                             <input
-                                                value={editCpf}
-                                                onChange={(e) => setEditCpf(e.target.value)}
-                                                className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
-                                                placeholder="000.000.000-00"
+                                                type="date"
+                                                value={scheduledDate}
+                                                onChange={(e) => setScheduledDate(e.target.value)}
+                                                className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm"
                                             />
                                         </div>
                                         <div className="space-y-2">
-                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Data Nasc.</label>
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Horário</label>
                                             <input
-                                                type="date"
-                                                value={editBirthDate}
-                                                onChange={(e) => setEditBirthDate(e.target.value)}
-                                                className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
+                                                type="time"
+                                                value={scheduledTime}
+                                                onChange={(e) => setScheduledTime(e.target.value)}
+                                                className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm"
                                             />
                                         </div>
                                     </div>
-                                    <button
-                                        onClick={handleSaveStudentData}
-                                        className="w-full h-10 border border-slate-700 hover:border-primary/50 text-slate-400 hover:text-primary transition-all rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 mt-2"
-                                    >
-                                        <span className="material-symbols-outlined text-sm">save</span>
-                                        Salvar Apenas Dados do Aluno
-                                    </button>
 
-                                    <label className="flex items-center gap-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl cursor-pointer group hover:bg-emerald-500/20 transition-all mt-4">
-                                        <div className={`size-6 rounded-lg border-2 flex items-center justify-center transition-all ${isConverted ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 bg-slate-900'}`}>
-                                            {isConverted && <span className="material-symbols-outlined text-[16px] font-black">check</span>}
-                                        </div>
-                                        <input
-                                            type="checkbox"
-                                            className="hidden"
-                                            checked={isConverted}
-                                            onChange={(e) => setIsConverted(e.target.checked)}
-                                        />
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Professor Responsável</label>
+                                        <select
+                                            value={selectedTeacherId}
+                                            onChange={(e) => setSelectedTeacherId(e.target.value)}
+                                            className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm appearance-none"
+                                        >
+                                            <option value="">Selecionar Professor...</option>
+                                            {teachers.map(t => (
+                                                <option key={t.id} value={t.id}>{t.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quadra</label>
+                                        <select
+                                            value={selectedCourtId}
+                                            onChange={(e) => setSelectedCourtId(e.target.value)}
+                                            className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm appearance-none"
+                                        >
+                                            <option value="">Selecionar Quadra...</option>
+                                            {courts.map(c => (
+                                                <option key={c.id} value={c.id}>{c.name}</option>
+                                            ))}
+                                        </select>
+                                    </div>
+                                    <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
                                         <div className="flex flex-col">
-                                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Converter em Aluno</span>
-                                            <span className="text-[8px] text-slate-500 font-bold">Marque se o aluno fechou o plano</span>
+                                            <span className="text-[10px] font-black text-slate-500 uppercase">Preferencia</span>
+                                            <span className="text-xs font-bold text-slate-300">{selectedReg?.availability?.days?.join(", ")}</span>
                                         </div>
-                                    </label>
-                                </div>
-
-                                <p className="text-[10px] font-black text-primary uppercase tracking-widest ml-1 mt-6">Agendamento</p>
-                                <div className="grid grid-cols-2 gap-4">
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Data da Aula</label>
-                                        <input
-                                            type="date"
-                                            value={scheduledDate}
-                                            onChange={(e) => setScheduledDate(e.target.value)}
-                                            className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm"
-                                        />
+                                        <div className="text-right">
+                                            <span className="text-[10px] font-black text-slate-500 uppercase">Periodo</span>
+                                            <span className="text-xs font-bold text-primary block uppercase">{selectedReg?.availability?.period}</span>
+                                        </div>
                                     </div>
-                                    <div className="space-y-2">
-                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Horário</label>
-                                        <input
-                                            type="time"
-                                            value={scheduledTime}
-                                            onChange={(e) => setScheduledTime(e.target.value)}
-                                            className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm"
-                                        />
+                                    <div className="flex gap-4 pt-4">
+                                        <button
+                                            onClick={() => setIsModalOpen(false)}
+                                            className="flex-1 h-14 rounded-2xl border-2 border-slate-800 text-slate-500 font-black uppercase text-xs tracking-widest hover:bg-slate-800 transition-all"
+                                        >
+                                            Cancelar
+                                        </button>
+                                        <button
+                                            onClick={handleSaveSchedule}
+                                            className="flex-[2] h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2"
+                                        >
+                                            {modalStatus === "COMPLETED" ? "Finalizar e Salvar" : "Confirmar Agendamento"}
+                                            <span className="material-symbols-outlined">check_circle</span>
+                                        </button>
                                     </div>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Professor Responsável</label>
-                                    <select
-                                        value={selectedTeacherId}
-                                        onChange={(e) => setSelectedTeacherId(e.target.value)}
-                                        className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm appearance-none"
-                                    >
-                                        <option value="">Selecionar Professor...</option>
-                                        {teachers.map(t => (
-                                            <option key={t.id} value={t.id}>{t.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quadra</label>
-                                    <select
-                                        value={selectedCourtId}
-                                        onChange={(e) => setSelectedCourtId(e.target.value)}
-                                        className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm appearance-none"
-                                    >
-                                        <option value="">Selecionar Quadra...</option>
-                                        {courts.map(c => (
-                                            <option key={c.id} value={c.id}>{c.name}</option>
-                                        ))}
-                                    </select>
-                                </div>
-                                <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
-                                    <div className="flex flex-col">
-                                        <span className="text-[10px] font-black text-slate-500 uppercase">Preferencia</span>
-                                        <span className="text-xs font-bold text-slate-300">{selectedReg?.availability?.days?.join(", ")}</span>
-                                    </div>
-                                    <div className="text-right">
-                                        <span className="text-[10px] font-black text-slate-500 uppercase">Periodo</span>
-                                        <span className="text-xs font-bold text-primary block uppercase">{selectedReg?.availability?.period}</span>
-                                    </div>
-                                </div>
-                                <div className="flex gap-4 pt-4">
-                                    <button
-                                        onClick={() => setIsModalOpen(false)}
-                                        className="flex-1 h-14 rounded-2xl border-2 border-slate-800 text-slate-500 font-black uppercase text-xs tracking-widest hover:bg-slate-800 transition-all"
-                                    >
-                                        Cancelar
-                                    </button>
-                                    <button
-                                        onClick={handleSaveSchedule}
-                                        className="flex-[2] h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2"
-                                    >
-                                        {modalStatus === "COMPLETED" ? "Finalizar e Salvar" : "Confirmar Agendamento"}
-                                        <span className="material-symbols-outlined">check_circle</span>
-                                    </button>
                                 </div>
                             </div>
                         </div>
-                    </div>
-                )}
+                    )
+                }
 
                 {/* Automation Confirmation Modal */}
-                {isAutoModalOpen && (
-                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 backdrop-blur-md bg-black/70 animate-in fade-in duration-300">
-                        <div className="bg-[#1c222c] border border-slate-800 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
-                            <div className="p-8 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
-                                <div>
-                                    <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">Disparar Automação</h3>
-                                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Etapa: <span className="text-primary">{autoModalStage}</span></p>
-                                </div>
-                                <button onClick={() => setIsAutoModalOpen(false)} className="size-10 rounded-full hover:bg-slate-800 text-slate-500 flex items-center justify-center transition-all">
-                                    <span className="material-symbols-outlined">close</span>
-                                </button>
-                            </div>
-
-                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
-                                {/* Preview Student */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 text-primary">
-                                        <span className="material-symbols-outlined text-sm">person</span>
-                                        <label className="text-[10px] font-black uppercase tracking-widest">Preview Aluno</label>
+                {
+                    isAutoModalOpen && (
+                        <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 backdrop-blur-md bg-black/70 animate-in fade-in duration-300">
+                            <div className="bg-[#1c222c] border border-slate-800 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                                <div className="p-8 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+                                    <div>
+                                        <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">Disparar Automação</h3>
+                                        <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Etapa: <span className="text-primary">{autoModalStage}</span></p>
                                     </div>
-                                    <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-sm text-slate-300 whitespace-pre-wrap font-medium">
-                                        {autoPreview.student || "Nenhuma mensagem configurada."}
-                                    </div>
-                                </div>
-
-                                {/* Preview Teacher */}
-                                <div className="space-y-3">
-                                    <div className="flex items-center gap-2 text-emerald-400">
-                                        <span className="material-symbols-outlined text-sm">school</span>
-                                        <label className="text-[10px] font-black uppercase tracking-widest">Preview Professor</label>
-                                    </div>
-                                    <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-sm text-slate-300 whitespace-pre-wrap font-medium">
-                                        {autoPreview.teacher || "Nenhuma mensagem configurada."}
-                                    </div>
-                                </div>
-                            </div>
-
-                            <div className="p-8 bg-slate-900/30 border-t border-slate-800">
-                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center mb-6">Escolha quem deve receber as mensagens agora:</p>
-                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
-                                    <button
-                                        onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "STUDENT"); setIsAutoModalOpen(false); }}
-                                        className="h-14 bg-slate-800 hover:bg-primary/20 hover:text-primary text-slate-300 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border border-slate-700 hover:border-primary/30 flex flex-col items-center justify-center gap-1"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">person</span>
-                                        Apenas Aluno
+                                    <button onClick={() => setIsAutoModalOpen(false)} className="size-10 rounded-full hover:bg-slate-800 text-slate-500 flex items-center justify-center transition-all">
+                                        <span className="material-symbols-outlined">close</span>
                                     </button>
-                                    <button
-                                        onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "TEACHER"); setIsAutoModalOpen(false); }}
-                                        className="h-14 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border border-slate-700 hover:border-emerald-500/30 flex flex-col items-center justify-center gap-1"
-                                    >
-                                        <span className="material-symbols-outlined text-xl">school</span>
-                                        Apenas Professor
-                                    </button>
-                                    <button
-                                        onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "BOTH"); setIsAutoModalOpen(false); }}
-                                        className="h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl shadow-primary/20 flex flex-col items-center justify-center gap-1"
-                                    >
-                                        <div className="flex gap-1 items-center">
+                                </div>
+
+                                <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                    {/* Preview Student */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2 text-primary">
                                             <span className="material-symbols-outlined text-sm">person</span>
-                                            <span className="text-xs">+</span>
-                                            <span className="material-symbols-outlined text-sm">school</span>
+                                            <label className="text-[10px] font-black uppercase tracking-widest">Preview Aluno</label>
                                         </div>
-                                        Ambos
+                                        <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-sm text-slate-300 whitespace-pre-wrap font-medium">
+                                            {autoPreview.student || "Nenhuma mensagem configurada."}
+                                        </div>
+                                    </div>
+
+                                    {/* Preview Teacher */}
+                                    <div className="space-y-3">
+                                        <div className="flex items-center gap-2 text-emerald-400">
+                                            <span className="material-symbols-outlined text-sm">school</span>
+                                            <label className="text-[10px] font-black uppercase tracking-widest">Preview Professor</label>
+                                        </div>
+                                        <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-sm text-slate-300 whitespace-pre-wrap font-medium">
+                                            {autoPreview.teacher || "Nenhuma mensagem configurada."}
+                                        </div>
+                                    </div>
+                                </div>
+
+                                <div className="p-8 bg-slate-900/30 border-t border-slate-800">
+                                    <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center mb-6">Escolha quem deve receber as mensagens agora:</p>
+                                    <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                        <button
+                                            onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "STUDENT"); setIsAutoModalOpen(false); }}
+                                            className="h-14 bg-slate-800 hover:bg-primary/20 hover:text-primary text-slate-300 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border border-slate-700 hover:border-primary/30 flex flex-col items-center justify-center gap-1"
+                                        >
+                                            <span className="material-symbols-outlined text-xl">person</span>
+                                            Apenas Aluno
+                                        </button>
+                                        <button
+                                            onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "TEACHER"); setIsAutoModalOpen(false); }}
+                                            className="h-14 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border border-slate-700 hover:border-emerald-500/30 flex flex-col items-center justify-center gap-1"
+                                        >
+                                            <span className="material-symbols-outlined text-xl">school</span>
+                                            Apenas Professor
+                                        </button>
+                                        <button
+                                            onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "BOTH"); setIsAutoModalOpen(false); }}
+                                            className="h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl shadow-primary/20 flex flex-col items-center justify-center gap-1"
+                                        >
+                                            <div className="flex gap-1 items-center">
+                                                <span className="material-symbols-outlined text-sm">person</span>
+                                                <span className="text-xs">+</span>
+                                                <span className="material-symbols-outlined text-sm">school</span>
+                                            </div>
+                                            Ambos
+                                        </button>
+                                    </div>
+                                    <button
+                                        onClick={() => setIsAutoModalOpen(false)}
+                                        className="w-full mt-4 h-10 text-slate-600 hover:text-slate-400 text-[10px] font-black uppercase tracking-widest transition-all"
+                                    >
+                                        Pular e não enviar nada
                                     </button>
                                 </div>
-                                <button
-                                    onClick={() => setIsAutoModalOpen(false)}
-                                    className="w-full mt-4 h-10 text-slate-600 hover:text-slate-400 text-[10px] font-black uppercase tracking-widest transition-all"
-                                >
-                                    Pular e não enviar nada
-                                </button>
                             </div>
                         </div>
-                    </div>
-                )}
-            </main>
-        </div>
+                    )
+                }
+            </main >
+        </div >
     );
 }
 
 function CalendarView({ data, onOpenReg }: { data: TrialClass[], onOpenReg: (reg: TrialClass) => void }) {
-    // Basic week view or day sorting
-    const scheduledOnly = data.filter(d => d.scheduledDate).sort((a, b) => new Date(a.scheduledDate!).getTime() - new Date(b.scheduledDate!).getTime());
+    const [currentDate, setCurrentDate] = useState(new Date());
+
+    const getDaysInMonth = (year: number, month: number) => new Date(year, month + 1, 0).getDate();
+    const getFirstDayOfMonth = (year: number, month: number) => new Date(year, month, 1).getDay();
+
+    const year = currentDate.getFullYear();
+    const month = currentDate.getMonth();
+    const daysInMonth = getDaysInMonth(year, month);
+    const firstDay = getFirstDayOfMonth(year, month);
+
+    const days = [];
+    // Padding for first day
+    for (let i = 0; i < firstDay; i++) {
+        days.push(null);
+    }
+    for (let i = 1; i <= daysInMonth; i++) {
+        days.push(new Date(year, month, i));
+    }
+
+    const nextMonth = () => setCurrentDate(new Date(year, month + 1, 1));
+    const prevMonth = () => setCurrentDate(new Date(year, month - 1, 1));
+
+    const monthName = currentDate.toLocaleString('pt-BR', { month: 'long', year: 'numeric' });
 
     return (
-        <div className="p-8 h-full overflow-y-auto custom-scrollbar">
-            <div className="space-y-8">
-                <div className="flex items-center justify-between">
-                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter">Cronograma de Aulas</h3>
-                    <div className="flex gap-2">
-                        <span className="flex items-center gap-2 text-xs font-bold text-slate-500">
-                            <div className="size-2 rounded-full bg-primary"></div> Agendada
-                        </span>
-                    </div>
+        <div className="p-4 md:p-8 h-full flex flex-col gap-6 overflow-hidden">
+            <div className="flex items-center justify-between">
+                <div>
+                    <h3 className="text-xl font-black text-white italic uppercase tracking-tighter capitalize">{monthName}</h3>
+                    <p className="text-[10px] text-slate-500 font-bold uppercase tracking-widest mt-1">Cronograma de Aulas</p>
                 </div>
+                <div className="flex gap-2">
+                    <button onClick={prevMonth} className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all">
+                        <span className="material-symbols-outlined text-sm">chevron_left</span>
+                    </button>
+                    <button onClick={() => setCurrentDate(new Date())} className="px-4 py-2 bg-slate-900 border border-slate-800 rounded-xl text-[10px] font-black uppercase text-slate-400 hover:text-white transition-all">
+                        Hoje
+                    </button>
+                    <button onClick={nextMonth} className="p-2 bg-slate-900 border border-slate-800 rounded-xl text-slate-400 hover:text-white transition-all">
+                        <span className="material-symbols-outlined text-sm">chevron_right</span>
+                    </button>
+                </div>
+            </div>
 
-                <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4 gap-6">
-                    {scheduledOnly.length === 0 ? (
-                        <div className="col-span-full py-20 text-center bg-slate-900/20 border border-dashed border-slate-800 rounded-[40px]">
-                            <p className="text-slate-500 font-medium">Nenhuma aula agendada para exibição no cronograma.</p>
-                        </div>
-                    ) : scheduledOnly.map(reg => (
-                        <div key={reg.id} className="bg-[#1c222c] border border-slate-800 rounded-3xl overflow-hidden shadow-lg group hover:border-primary transition-all">
-                            <div className="p-4 bg-primary/10 border-b border-primary/20 flex justify-between items-center">
-                                <span className="text-[10px] font-black text-primary uppercase">{new Date(reg.scheduledDate!).toLocaleDateString('pt-BR', { weekday: 'long' })}</span>
-                                <span className="text-sm font-black text-white italic">{new Date(reg.scheduledDate!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
-                            </div>
-                            <div className="p-5 space-y-4">
-                                <div>
-                                    <h4 className="font-black text-white italic">{reg.name}</h4>
-                                    <p className="text-[10px] text-slate-500 font-bold uppercase">{reg.level} - {reg.sport}</p>
-                                    <div className="flex gap-2 mt-2">
-                                        {reg.teacher && (
-                                            <span className="text-[8px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-black flex items-center gap-1">
-                                                <span className="material-symbols-outlined text-[10px]">school</span>
-                                                {reg.teacher.name}
-                                            </span>
-                                        )}
-                                        {reg.court && (
-                                            <span className="text-[8px] px-2 py-0.5 rounded font-black flex items-center gap-1" style={{ backgroundColor: `${reg.court.color}20`, color: reg.court.color }}>
-                                                <span className="material-symbols-outlined text-[10px]">sports_tennis</span>
-                                                {reg.court.name}
-                                            </span>
-                                        )}
-                                    </div>
-                                </div>
-                                <div className="flex gap-2">
-                                    <button
-                                        onClick={() => window.open(`https://wa.me/${reg.phone.replace(/\D/g, '')}`, '_blank')}
-                                        className="size-9 rounded-xl bg-emerald-500/10 text-emerald-500 hover:bg-emerald-500 hover:text-white flex items-center justify-center transition-all"
-                                    >
-                                        <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" className="size-4" alt="WA" />
-                                    </button>
-                                    <button
-                                        onClick={() => onOpenReg(reg)}
-                                        className="flex-1 h-9 rounded-xl bg-slate-800 hover:bg-slate-700 text-slate-300 text-[10px] font-black uppercase transition-all"
-                                    >
-                                        Editar
-                                    </button>
-                                </div>
-                            </div>
-                        </div>
+            <div className="flex-1 overflow-auto custom-scrollbar bg-[#11161d]/50 rounded-[40px] border border-slate-800/50 flex flex-col">
+                <div className="grid grid-cols-7 border-b border-slate-800/50">
+                    {['Dom', 'Seg', 'Ter', 'Qua', 'Qui', 'Sex', 'Sáb'].map(d => (
+                        <div key={d} className="p-4 text-center text-[10px] font-black text-slate-500 uppercase tracking-widest">{d}</div>
                     ))}
+                </div>
+                <div className="flex-1 grid grid-cols-7 auto-rows-fr">
+                    {days.map((date, idx) => {
+                        if (!date) return <div key={`empty-${idx}`} className="border-b border-r border-slate-800/10 bg-slate-900/10"></div>;
+
+                        const dateStr = date.toISOString().split('T')[0];
+                        const dayData = data.filter(d => d.scheduledDate && d.scheduledDate.startsWith(dateStr))
+                            .sort((a, b) => new Date(a.scheduledDate!).getTime() - new Date(b.scheduledDate!).getTime());
+
+                        const isToday = date.toDateString() === new Date().toDateString();
+
+                        return (
+                            <div key={dateStr} className={`min-h-[140px] p-2 border-b border-r border-slate-800/30 flex flex-col gap-2 transition-all hover:bg-slate-800/20 ${isToday ? 'bg-primary/5' : ''}`}>
+                                <div className="flex justify-between items-center px-1">
+                                    <span className={`text-xs font-black ${isToday ? 'text-primary' : 'text-slate-600'}`}>
+                                        {date.getDate()}
+                                    </span>
+                                    {dayData.length > 0 && (
+                                        <span className="text-[8px] bg-slate-800 text-slate-500 px-1.5 py-0.5 rounded font-black">
+                                            {dayData.length}
+                                        </span>
+                                    )}
+                                </div>
+                                <div className="flex-1 overflow-y-auto space-y-1 custom-scrollbar pr-1">
+                                    {dayData.map(reg => (
+                                        <div
+                                            key={reg.id}
+                                            onClick={() => onOpenReg(reg)}
+                                            className="p-1.5 rounded-lg bg-[#1c222c] border border-slate-800 text-[9px] cursor-pointer hover:border-primary transition-all group overflow-hidden"
+                                        >
+                                            <div className="flex justify-between items-center mb-0.5">
+                                                <span className="font-black text-white italic truncate pr-1">{reg.name.split(' ')[0]}</span>
+                                                <span className="text-primary font-bold shrink-0">{new Date(reg.scheduledDate!).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' })}</span>
+                                            </div>
+                                            <div className="flex gap-1 items-center opacity-60 group-hover:opacity-100 transition-opacity">
+                                                {reg.court && (
+                                                    <div className="size-1.5 rounded-full" style={{ backgroundColor: reg.court.color }}></div>
+                                                )}
+                                                <span className="text-slate-500 text-[8px] truncate">{reg.teacher?.name.split(' ')[0]}</span>
+                                            </div>
+                                        </div>
+                                    ))}
+                                </div>
+                            </div>
+                        );
+                    })}
                 </div>
             </div>
         </div>
@@ -825,10 +914,11 @@ function KanbanCard({ reg, onArchive, onUpdate, onSetDate, onAddTag, onRemoveTag
             draggable
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            className={`bg-[#1c222c] border border-slate-800/80 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-all group border-l-4 cursor-grab active:cursor-grabbing active:scale-95 active:rotate-1 ${reg.status === 'COMPLETED' ? 'border-l-emerald-400' :
-                reg.status === 'CONFIRMED' ? 'border-l-primary' :
-                    reg.status === 'CANCELLED' ? 'border-l-red-400' :
-                        'border-l-amber-400/50'
+            className={`bg-[#1c222c] border border-slate-800/80 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-all group border-l-4 cursor-grab active:cursor-grabbing active:scale-95 active:rotate-1 ${reg.status === 'CONVERTED' ? 'border-l-pink-400' :
+                reg.status === 'COMPLETED' ? 'border-l-emerald-400' :
+                    reg.status === 'CONFIRMED' ? 'border-l-primary' :
+                        reg.status === 'CANCELLED' ? 'border-l-red-400' :
+                            'border-l-amber-400/50'
                 }`}
         >
             <div className="flex justify-between items-start mb-3">
@@ -836,11 +926,11 @@ function KanbanCard({ reg, onArchive, onUpdate, onSetDate, onAddTag, onRemoveTag
                     <h4 className="font-black text-white italic text-sm">{reg.name}</h4>
                     <div className="flex flex-col">
                         <p className="text-[10px] text-slate-500 font-bold">{reg.phone}</p>
-                        {(reg.email || reg.cpf) && (
+                        {(reg.email || reg.cpf || reg.birthDate) && (
                             <div className="flex gap-2 mt-0.5">
                                 {reg.email && <span className="material-symbols-outlined text-[12px] text-slate-600" title={reg.email}>mail</span>}
                                 {reg.cpf && <span className="material-symbols-outlined text-[12px] text-slate-600" title={reg.cpf}>badge</span>}
-                                {reg.birthDate && <span className="material-symbols-outlined text-[12px] text-slate-600" title={reg.birthDate}>cake</span>}
+                                {reg.birthDate && <span className="material-symbols-outlined text-[12px] text-slate-600 font-black" title={reg.birthDate}>cake</span>}
                             </div>
                         )}
                     </div>

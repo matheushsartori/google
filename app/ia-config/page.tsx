@@ -130,8 +130,8 @@ export default function AiConfigPage() {
                             <div className="col-span-12">
                                 <div className={`p-6 rounded-2xl border transition-all flex items-center justify-between ${aiEnabled ? 'bg-emerald-500/5 border-emerald-500/20' : 'bg-red-500/5 border-red-500/20'}`}>
                                     <div className="flex items-center gap-4">
-                                        <div className={`size-12 rounded-xl flex items-center justify-center transition-colors ${aiEnabled ? 'bg-emerald-500 text-white' : 'bg-red-500 text-white'}`}>
-                                            <span className="material-symbols-outlined text-2xl">{aiEnabled ? 'smart_toy' : 'robot_off'}</span>
+                                        <div className={`size-12 rounded-xl flex items-center justify-center transition-colors ${aiEnabled ? 'bg-emerald-500 text-white' : 'bg-slate-700 text-slate-400'}`}>
+                                            <span className="material-symbols-outlined text-2xl">{aiEnabled ? 'psychology' : 'psychology_alt'}</span>
                                         </div>
                                         <div>
                                             <h3 className="text-white font-black uppercase tracking-tight text-lg">Inteligência Artificial</h3>

@@ -1,5 +1,5 @@
 generator client {
-  provider = "prisma-client-js"
+  provider      = "prisma-client-js"
   binaryTargets = ["native", "windows"]
 }
 
@@ -52,40 +52,40 @@ model KnowledgeBase {
 }
 
 model ConnectionInstance {
-  id            String   @id @default(uuid())
-  name          String   @unique
-  instanceId    String   @unique
-  status        String   @default("DISCONNECTED")
+  id            String    @id @default(uuid())
+  name          String    @unique
+  instanceId    String    @unique
+  status        String    @default("DISCONNECTED")
   version       String?
   type          String?
   lastSync      DateTime?
-  webhookStatus String?  @default("INACTIVE")
-  createdAt     DateTime @default(now())
-  updatedAt     DateTime @updatedAt
+  webhookStatus String?   @default("INACTIVE")
+  createdAt     DateTime  @default(now())
+  updatedAt     DateTime  @updatedAt
 }
 
 model TrialClass {
   id            String    @id @default(uuid())
   name          String
   phone         String
-  email         String?
-  cpf           String?
-  birthDate     String?
-  sport         String    @default("Tênis")
-  level         String    // Iniciante, Intermediário, Avançado
-  availability  Json      // { days: [], period: "" }
+  level         String
+  availability  Json
   observations  String?
-  status        String    @default("PENDING") // PENDING, CONFIRMED, CANCELLED, ARCHIVED
-  scheduledDate DateTime?
-  tags          String[]  @default([])
-  archived      Boolean   @default(false)
-  isConverted   Boolean   @default(false)
-  teacherId     String?
-  teacher       Teacher?  @relation(fields: [teacherId], references: [id])
-  courtId       String?
-  court         Court?    @relation(fields: [courtId], references: [id])
+  status        String    @default("PENDING")
   createdAt     DateTime  @default(now())
   updatedAt     DateTime  @updatedAt
+  archived      Boolean   @default(false)
+  scheduledDate DateTime?
+  sport         String    @default("Tênis")
+  tags          String[]  @default([])
+  birthDate     String?
+  courtId       String?
+  cpf           String?
+  email         String?
+  teacherId     String?
+  isConverted   Boolean   @default(false)
+  court         Court?    @relation(fields: [courtId], references: [id])
+  teacher       Teacher?  @relation(fields: [teacherId], references: [id])
 }
 
 model WebhookLog {
@@ -103,29 +103,47 @@ model WebhookLog {
 model Teacher {
   id           String       @id @default(uuid())
   name         String
-  email        String?
   phone        String       @unique
-  active       Boolean      @default(true)
-  trialClasses TrialClass[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+  active       Boolean      @default(true)
+  email        String?
+  trialClasses TrialClass[]
 }
 
 model Court {
   id           String       @id @default(uuid())
   name         String       @unique
   color        String
-  trialClasses TrialClass[]
   createdAt    DateTime     @default(now())
   updatedAt    DateTime     @updatedAt
+  trialClasses TrialClass[]
 }
 
 model Automation {
-  id          String   @id @default(uuid())
-  stage       String   @unique // PENDING, CONFIRMED, CANCELLED
-  teacherMsg  String?  // Ex: "Olá {teacher_name}, nova aula agendada para {student_name} na quadra {court_name} às {time}."
-  studentMsg  String?  // Ex: "Olá {student_name}, sua aula de {sport} está confirmada para {date} às {time} na {court_name}."
-  active      Boolean  @default(true)
-  createdAt   DateTime @default(now())
-  updatedAt   DateTime @updatedAt
+  id         String   @id @default(uuid())
+  stage      String   @unique
+  teacherMsg String?
+  studentMsg String?
+  active     Boolean  @default(true)
+  createdAt  DateTime @default(now())
+  updatedAt  DateTime @updatedAt
+}
+
+model AutomationLog {
+  id           String   @id @default(uuid())
+  type         String
+  stage        String
+  targetPhone  String
+  targetName   String
+  message      String
+  status       String
+  error        String?
+  requestData  Json?
+  responseData Json?
+  instanceName String?
+  createdAt    DateTime @default(now())
+
+  @@index([createdAt])
+  @@index([targetPhone])
 }

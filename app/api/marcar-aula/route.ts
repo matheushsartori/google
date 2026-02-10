@@ -56,6 +56,7 @@ export async function GET(request: Request) {
 
         return NextResponse.json(results);
     } catch (error) {
+        console.error("GET /api/marcar-aula error:", error);
         return NextResponse.json({ error: "Erro ao buscar agendamentos" }, { status: 500 });
     }
 }
