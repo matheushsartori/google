@@ -65,6 +65,10 @@ export default function TrialClassesAdminPage() {
     const [autoModalDate, setAutoModalDate] = useState("");
     const [autoPreview, setAutoPreview] = useState({ student: "", teacher: "" });
 
+    // Archive Confirmation
+    const [isArchiveModalOpen, setIsArchiveModalOpen] = useState(false);
+    const [regToArchive, setRegToArchive] = useState<TrialClass | null>(null);
+
     // Lookups
     const [teachers, setTeachers] = useState<any[]>([]);
     const [courts, setCourts] = useState<any[]>([]);
@@ -132,10 +136,34 @@ export default function TrialClassesAdminPage() {
 
     const updateRegistration = async (id: string, data: Partial<TrialClass>, silent = false) => {
         try {
+            const oldData = registrations.find(r => r.id === id);
             await axios.post("/api/marcar-aula/update-status", { id, ...data });
-            if (!silent) toast.success("Registro atualizado!");
+
+            if (!silent) {
+                if (data.archived === true) {
+                    toast((t) => (
+                        <div className="flex items-center gap-3">
+                            <span className="text-sm">Lead arquivado!</span>
+                            <button
+                                onClick={() => {
+                                    updateRegistration(id, { archived: false }, true);
+                                    toast.dismiss(t.id);
+                                }}
+                                className="bg-primary/20 text-primary px-2 py-1 rounded text-[10px] font-black uppercase hover:bg-primary/30 transition-all border border-primary/20"
+                            >
+                                Desfazer
+                            </button>
+                        </div>
+                    ), { duration: 5000 });
+                } else if (data.archived === false && oldData?.archived === true) {
+                    toast.success("Lead restaurado!");
+                } else {
+                    toast.success("Registro atualizado!");
+                }
+            }
             fetchRegistrations();
             setIsModalOpen(false);
+            setIsArchiveModalOpen(false);
         } catch (error) {
             toast.error("Erro ao atualizar registro");
             fetchRegistrations(); // Rollback on error
@@ -456,7 +484,10 @@ export default function TrialClassesAdminPage() {
                                             <KanbanCard
                                                 key={reg.id}
                                                 reg={reg}
-                                                onArchive={() => updateRegistration(reg.id, { archived: !reg.archived })}
+                                                onArchive={() => {
+                                                    setRegToArchive(reg);
+                                                    setIsArchiveModalOpen(true);
+                                                }}
                                                 onUpdate={(data) => updateRegistration(reg.id, data)}
                                                 onSetDate={() => handleOpenModal(reg)}
                                                 onAddTag={() => addTag(reg.id, reg.tags)}
@@ -540,7 +571,10 @@ export default function TrialClassesAdminPage() {
                                                         <img src="https://upload.wikimedia.org/wikipedia/commons/6/6b/WhatsApp.svg" className="size-4" alt="WA" />
                                                     </button>
                                                     <button
-                                                        onClick={() => updateRegistration(reg.id, { archived: !reg.archived })}
+                                                        onClick={() => {
+                                                            setRegToArchive(reg);
+                                                            setIsArchiveModalOpen(true);
+                                                        }}
                                                         className="size-8 rounded-lg bg-slate-700/50 text-slate-400 hover:bg-slate-700 hover:text-white flex items-center justify-center transition-all border border-slate-700"
                                                     >
                                                         <span className="material-symbols-outlined text-sm">{reg.archived ? 'unarchive' : 'archive'}</span>
@@ -792,8 +826,39 @@ export default function TrialClassesAdminPage() {
                         </div>
                     )
                 }
-            </main >
-        </div >
+
+                {/* Archive Confirmation Modal */}
+                {isArchiveModalOpen && regToArchive && (
+                    <div className="fixed inset-0 z-[120] flex items-center justify-center p-4 bg-black/80 backdrop-blur-sm animate-in fade-in duration-300">
+                        <div className="bg-[#0f1218] border border-slate-800 rounded-[32px] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                            <div className="p-8 text-center">
+                                <div className="size-20 rounded-full bg-amber-500/10 border border-amber-500/20 flex items-center justify-center mx-auto mb-6">
+                                    <span className="material-symbols-outlined text-4xl text-amber-500">archive</span>
+                                </div>
+                                <h3 className="text-2xl text-white font-black uppercase tracking-tight mb-2 italic">Arquivar Lead?</h3>
+                                <p className="text-slate-400 text-sm leading-relaxed mb-8">
+                                    O lead <span className="text-white font-bold">{regToArchive.name}</span> será movido para a lista de arquivados. Você poderá restaurá-lo a qualquer momento.
+                                </p>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <button
+                                        onClick={() => setIsArchiveModalOpen(false)}
+                                        className="h-12 rounded-2xl border border-slate-800 text-slate-400 font-bold hover:bg-slate-800 transition-all"
+                                    >
+                                        Cancelar
+                                    </button>
+                                    <button
+                                        onClick={() => updateRegistration(regToArchive.id, { archived: true })}
+                                        className="h-12 rounded-2xl bg-amber-500 text-white font-black italic uppercase tracking-widest hover:bg-amber-600 transition-all shadow-lg shadow-amber-500/20"
+                                    >
+                                        Confirmar
+                                    </button>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+            </main>
+        </div>
     );
 }
 
