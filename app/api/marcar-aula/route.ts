@@ -5,7 +5,7 @@ import { prisma } from "@/lib/prisma";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { name, phone, level, availability, observations, sport } = body;
+        const { name, phone, email, cpf, birthDate, level, availability, observations, sport } = body;
 
         if (!name || !phone || !level || !availability) {
             return NextResponse.json({ error: "Campos obrigatórios ausentes" }, { status: 400 });
@@ -15,6 +15,9 @@ export async function POST(request: Request) {
             data: {
                 name,
                 phone,
+                email,
+                cpf,
+                birthDate,
                 sport: sport || "Tênis",
                 level,
                 availability,
@@ -44,6 +47,10 @@ export async function GET(request: Request) {
 
         const results = await prisma.trialClass.findMany({
             where,
+            include: {
+                teacher: true,
+                court: true
+            },
             orderBy: { createdAt: "desc" }
         });
 

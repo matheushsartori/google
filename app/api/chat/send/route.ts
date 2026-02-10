@@ -5,7 +5,21 @@ import { sendMessage } from "@/lib/evolution";
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { leadId, content } = body;
+        const { leadId, content, number, text, instanceName } = body;
+
+        // Support for automations / direct number (number + text)
+        if (number && text) {
+            const finalInstanceName = instanceName || (await prisma.connectionInstance.findFirst({
+                where: { status: "CONNECTED" },
+            }))?.name;
+
+            if (!finalInstanceName) {
+                return NextResponse.json({ error: "No active WhatsApp instance found" }, { status: 503 });
+            }
+
+            await sendMessage(finalInstanceName, number, text);
+            return NextResponse.json({ success: true });
+        }
 
         if (!leadId || !content) {
             return NextResponse.json({ error: "Missing required fields" }, { status: 400 });

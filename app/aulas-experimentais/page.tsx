@@ -10,6 +10,9 @@ interface TrialClass {
     id: string;
     name: string;
     phone: string;
+    email?: string;
+    cpf?: string;
+    birthDate?: string;
     sport: string;
     level: string;
     availability: any;
@@ -18,6 +21,11 @@ interface TrialClass {
     scheduledDate: string | null;
     tags: string[];
     archived: boolean;
+    isConverted: boolean;
+    teacherId?: string;
+    courtId?: string;
+    teacher?: { id: string, name: string, phone: string };
+    court?: { id: string, name: string, color: string };
     createdAt: string;
 }
 
@@ -35,11 +43,50 @@ export default function TrialClassesAdminPage() {
     const [draggedId, setDraggedId] = useState<string | null>(null);
     const [dragOverCol, setDragOverCol] = useState<string | null>(null);
 
-    // Modal State
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [selectedReg, setSelectedReg] = useState<TrialClass | null>(null);
     const [scheduledDate, setScheduledDate] = useState("");
     const [scheduledTime, setScheduledTime] = useState("");
+    const [selectedTeacherId, setSelectedTeacherId] = useState("");
+    const [selectedCourtId, setSelectedCourtId] = useState("");
+    const [editEmail, setEditEmail] = useState("");
+    const [editCpf, setEditCpf] = useState("");
+    const [editBirthDate, setEditBirthDate] = useState("");
+    const [modalStatus, setModalStatus] = useState("CONFIRMED");
+    const [isConverted, setIsConverted] = useState(false);
+
+    // Automation Confirmation Modal
+    const [isAutoModalOpen, setIsAutoModalOpen] = useState(false);
+    const [autoModalTarget, setAutoModalTarget] = useState<TrialClass | null>(null);
+    const [autoModalStage, setAutoModalStage] = useState("");
+    const [autoModalTeacherId, setAutoModalTeacherId] = useState("");
+    const [autoModalCourtId, setAutoModalCourtId] = useState("");
+    const [autoModalDate, setAutoModalDate] = useState("");
+    const [autoPreview, setAutoPreview] = useState({ student: "", teacher: "" });
+
+    // Lookups
+    const [teachers, setTeachers] = useState<any[]>([]);
+    const [courts, setCourts] = useState<any[]>([]);
+    const [automations, setAutomations] = useState<any[]>([]);
+
+    const fetchLookups = async () => {
+        try {
+            const [baseRes, teachersRes, courtsRes, automationsRes] = await Promise.all([
+                axios.get("/api/marcar-aula", { params: { level: filterLevel, status: filterStatus, archived: showArchived } }),
+                axios.get("/api/teachers", { params: { active: true } }),
+                axios.get("/api/courts"),
+                axios.get("/api/automations")
+            ]);
+            setRegistrations(baseRes.data);
+            setTeachers(teachersRes.data);
+            setCourts(courtsRes.data);
+            setAutomations(automationsRes.data);
+        } catch (error) {
+            console.error("Error fetching lookups:", error);
+        } finally {
+            setLoading(false);
+        }
+    };
 
     const fetchRegistrations = async () => {
         setLoading(true);
@@ -56,7 +103,7 @@ export default function TrialClassesAdminPage() {
     };
 
     useEffect(() => {
-        fetchRegistrations();
+        fetchLookups();
     }, [filterLevel, filterStatus, showArchived]);
 
     const updateRegistration = async (id: string, data: Partial<TrialClass>, silent = false) => {
@@ -77,6 +124,7 @@ export default function TrialClassesAdminPage() {
 
     const handleOpenModal = (reg: TrialClass) => {
         setSelectedReg(reg);
+        setModalStatus(reg.status === "PENDING" ? "CONFIRMED" : reg.status);
         if (reg.scheduledDate) {
             const d = new Date(reg.scheduledDate);
             setScheduledDate(d.toISOString().split('T')[0]);
@@ -85,22 +133,121 @@ export default function TrialClassesAdminPage() {
             setScheduledDate("");
             setScheduledTime("");
         }
+        setSelectedTeacherId(reg.teacherId || "");
+        setSelectedCourtId(reg.courtId || "");
+        setEditEmail(reg.email || "");
+        setEditCpf(reg.cpf || "");
+        setEditBirthDate(reg.birthDate || "");
+        setIsConverted(reg.isConverted || false);
         setIsModalOpen(true);
+    };
+
+    const buildMessage = (text: string, reg: TrialClass, teacherId?: string, courtId?: string, date?: string) => {
+        const teacher = teachers.find(t => t.id === teacherId);
+        const court = courts.find(c => c.id === courtId);
+        const variables = {
+            "{student_name}": reg.name,
+            "{student_phone}": reg.phone,
+            "{teacher_name}": teacher?.name || "Professor",
+            "{court_name}": court?.name || "Quadra",
+            "{sport}": reg.sport,
+            "{date}": date ? new Date(date).toLocaleDateString('pt-BR') : "a combinar",
+            "{time}": date ? new Date(date).toLocaleTimeString('pt-BR', { hour: '2-digit', minute: '2-digit' }) : "a combinar"
+        };
+        let res = text;
+        Object.entries(variables).forEach(([key, val]) => {
+            res = res.replace(new RegExp(key, 'g'), val);
+        });
+        return res;
+    };
+
+    const sendAutomatedMessages = async (reg: TrialClass, stage: string, teacherId?: string, courtId?: string, date?: string, target: "BOTH" | "STUDENT" | "TEACHER" = "BOTH") => {
+        const automation = automations.find(a => a.stage === stage);
+        if (!automation || !automation.active) return;
+
+        const teacher = teachers.find(t => t.id === teacherId);
+
+        try {
+            // Get first active connection instance
+            const connectionRes = await axios.get("/api/instances");
+            const instance = connectionRes.data.find((i: any) => i.status === "CONNECTED");
+
+            if (!instance) {
+                toast.error("Nenhuma instância conectada para enviar mensagens");
+                return;
+            }
+
+            if ((target === "BOTH" || target === "TEACHER") && automation.teacherMsg && teacher?.phone) {
+                await axios.post("/api/chat/send", {
+                    instanceName: instance.name,
+                    number: teacher.phone,
+                    text: buildMessage(automation.teacherMsg, reg, teacherId, courtId, date)
+                });
+                toast.success(`Mensagem enviada para o professor ${teacher.name}`);
+            }
+
+            if ((target === "BOTH" || target === "STUDENT") && automation.studentMsg && reg.phone) {
+                await axios.post("/api/chat/send", {
+                    instanceName: instance.name,
+                    number: reg.phone,
+                    text: buildMessage(automation.studentMsg, reg, teacherId, courtId, date)
+                });
+                toast.success(`Mensagem enviada para o aluno ${reg.name}`);
+            }
+        } catch (error) {
+            console.error("Error sending automations:", error);
+            toast.error("Erro ao enviar mensagens automáticas");
+        }
     };
 
     const handleSaveSchedule = () => {
         if (!selectedReg) return;
 
-        const data: Partial<TrialClass> = { status: "CONFIRMED" };
+        const data: Partial<TrialClass> = {
+            status: modalStatus,
+            email: editEmail,
+            cpf: editCpf,
+            birthDate: editBirthDate,
+            isConverted: isConverted,
+            teacherId: selectedTeacherId || undefined,
+            courtId: selectedCourtId || undefined
+        };
 
+        let finalDate = "";
         if (scheduledDate && scheduledTime) {
             const fullDate = new Date(`${scheduledDate}T${scheduledTime}:00`);
             data.scheduledDate = fullDate.toISOString();
+            finalDate = data.scheduledDate;
         } else {
             data.scheduledDate = null;
         }
 
         updateRegistration(selectedReg.id, data);
+
+        // Open Automation Modal Instead of Confirm
+        const automation = automations.find(a => a.stage === data.status);
+        if (automation && automation.active) {
+            setAutoModalTarget(selectedReg);
+            setAutoModalStage(data.status!);
+            setAutoModalTeacherId(selectedTeacherId);
+            setAutoModalCourtId(selectedCourtId);
+            setAutoModalDate(finalDate);
+            setAutoPreview({
+                student: buildMessage(automation.studentMsg || "", selectedReg, selectedTeacherId, selectedCourtId, finalDate),
+                teacher: buildMessage(automation.teacherMsg || "", selectedReg, selectedTeacherId, selectedCourtId, finalDate)
+            });
+            setIsAutoModalOpen(true);
+        }
+    };
+
+    const handleSaveStudentData = () => {
+        if (!selectedReg) return;
+        updateRegistration(selectedReg.id, {
+            email: editEmail,
+            cpf: editCpf,
+            birthDate: editBirthDate,
+            isConverted: isConverted
+        });
     };
 
     const addTag = (id: string, currentTags: string[]) => {
@@ -139,6 +286,7 @@ export default function TrialClassesAdminPage() {
     const kanbanColumns = [
         { id: "PENDING", title: "Novos Leads", icon: "inbox", color: "text-amber-400" },
         { id: "CONFIRMED", title: "Agendados", icon: "calendar_month", color: "text-primary" },
+        { id: "COMPLETED", title: "Realizados", icon: "task_alt", color: "text-emerald-400" },
         { id: "CANCELLED", title: "Cancelados", icon: "cancel", color: "text-red-400" }
     ];
 
@@ -237,7 +385,7 @@ export default function TrialClassesAdminPage() {
                                             // Optimistic Update
                                             optimisticUpdateStatus(draggedId, col.id);
 
-                                            if (col.id === 'CONFIRMED') {
+                                            if (col.id === 'CONFIRMED' || col.id === 'COMPLETED') {
                                                 handleOpenModal({ ...reg, status: col.id });
                                             } else {
                                                 updateRegistration(draggedId, { status: col.id }, true);
@@ -294,14 +442,25 @@ export default function TrialClassesAdminPage() {
                                                     </div>
                                                     <div>
                                                         <p className="font-black text-white italic truncate">{reg.name}</p>
-                                                        <p className="text-[10px] text-slate-500 font-bold">{reg.sport} - {reg.level}</p>
+                                                        <div className="flex flex-col gap-0.5 mt-0.5">
+                                                            <p className="text-[10px] text-slate-500 font-bold">{reg.phone}</p>
+                                                            <p className="text-[9px] text-slate-400 font-medium">{reg.sport} - {reg.level}</p>
+                                                            <div className="flex gap-2 mt-1">
+                                                                {reg.email && <span className="text-[8px] text-slate-600 flex items-center gap-0.5"><span className="material-symbols-outlined text-[10px]">mail</span> {reg.email}</span>}
+                                                                {reg.cpf && <span className="text-[8px] text-slate-600 flex items-center gap-0.5"><span className="material-symbols-outlined text-[10px]">badge</span> {reg.cpf}</span>}
+                                                            </div>
+                                                        </div>
                                                     </div>
                                                 </div>
                                             </td>
                                             <td className="px-6 py-5 border-y border-slate-800/50">
                                                 <div className="flex flex-col gap-2">
-                                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full w-fit bg-slate-900 border ${reg.status === 'PENDING' ? 'text-amber-400 border-amber-500/20' : reg.status === 'CONFIRMED' ? 'text-primary border-primary/20' : 'text-red-400 border-red-500/20'}`}>
-                                                        {reg.status}
+                                                    <span className={`text-[8px] font-black px-2 py-0.5 rounded-full w-fit bg-slate-900 border ${reg.status === 'PENDING' ? 'text-amber-400 border-amber-500/20' :
+                                                        reg.status === 'CONFIRMED' ? 'text-primary border-primary/20' :
+                                                            reg.status === 'COMPLETED' ? 'text-emerald-400 border-emerald-500/20' :
+                                                                'text-red-400 border-red-500/20'
+                                                        }`}>
+                                                        {reg.status === 'COMPLETED' ? 'REALIZADO' : reg.status === 'CONFIRMED' ? 'AGENDADO' : reg.status === 'PENDING' ? 'PENDENTE' : 'CANCELADO'}
                                                     </span>
                                                     <div className="flex flex-wrap gap-1">
                                                         {reg.tags.map(t => (
@@ -354,27 +513,121 @@ export default function TrialClassesAdminPage() {
                     <div className="fixed inset-0 z-[100] flex items-center justify-center p-6 backdrop-blur-sm bg-black/60 animate-in fade-in duration-300">
                         <div className="bg-[#161b22] border border-slate-800 rounded-[40px] w-full max-w-md overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
                             <div className="p-8 border-b border-slate-800 bg-[#1c222c]">
-                                <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">Agendar Aula</h3>
-                                <p className="text-slate-400 text-sm font-medium">Defina data e hora para <span className="text-primary font-bold">{selectedReg?.name}</span></p>
-                            </div>
-                            <div className="p-8 space-y-6">
-                                <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Data da Aula</label>
-                                    <input
-                                        type="date"
-                                        value={scheduledDate}
-                                        onChange={(e) => setScheduledDate(e.target.value)}
-                                        className="w-full h-14 bg-slate-900 border-2 border-slate-800 rounded-2xl px-5 text-white focus:border-primary outline-none transition-all font-bold"
-                                    />
+                                <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">
+                                    {modalStatus === "COMPLETED" ? "Concluir Aula" : "Agendar Aula"}
+                                </h3>
+                                <div className="flex flex-col">
+                                    <p className="text-slate-400 text-sm font-medium">Configure os detalhes da aula para <span className="text-primary font-bold">{selectedReg?.name}</span></p>
                                 </div>
+                            </div>
+                            <div className="p-8 space-y-4 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                <div className="space-y-4 bg-slate-900/40 p-5 rounded-3xl border border-slate-800/50 mb-4">
+                                    <p className="text-[10px] font-black text-primary uppercase tracking-widest ml-1">Informações do Aluno</p>
+
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">E-mail</label>
+                                        <input
+                                            type="email"
+                                            value={editEmail}
+                                            onChange={(e) => setEditEmail(e.target.value)}
+                                            className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
+                                            placeholder="seu@email.com"
+                                        />
+                                    </div>
+
+                                    <div className="grid grid-cols-2 gap-4">
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">CPF</label>
+                                            <input
+                                                value={editCpf}
+                                                onChange={(e) => setEditCpf(e.target.value)}
+                                                className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
+                                                placeholder="000.000.000-00"
+                                            />
+                                        </div>
+                                        <div className="space-y-2">
+                                            <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Data Nasc.</label>
+                                            <input
+                                                type="date"
+                                                value={editBirthDate}
+                                                onChange={(e) => setEditBirthDate(e.target.value)}
+                                                className="w-full h-11 bg-slate-900 border border-slate-800 rounded-xl px-4 text-white focus:border-primary outline-none transition-all text-xs font-bold"
+                                            />
+                                        </div>
+                                    </div>
+                                    <button
+                                        onClick={handleSaveStudentData}
+                                        className="w-full h-10 border border-slate-700 hover:border-primary/50 text-slate-400 hover:text-primary transition-all rounded-xl text-[10px] font-black uppercase tracking-widest flex items-center justify-center gap-2 mt-2"
+                                    >
+                                        <span className="material-symbols-outlined text-sm">save</span>
+                                        Salvar Apenas Dados do Aluno
+                                    </button>
+
+                                    <label className="flex items-center gap-3 p-3 bg-emerald-500/10 border border-emerald-500/20 rounded-2xl cursor-pointer group hover:bg-emerald-500/20 transition-all mt-4">
+                                        <div className={`size-6 rounded-lg border-2 flex items-center justify-center transition-all ${isConverted ? 'bg-emerald-500 border-emerald-500 text-white' : 'border-slate-700 bg-slate-900'}`}>
+                                            {isConverted && <span className="material-symbols-outlined text-[16px] font-black">check</span>}
+                                        </div>
+                                        <input
+                                            type="checkbox"
+                                            className="hidden"
+                                            checked={isConverted}
+                                            onChange={(e) => setIsConverted(e.target.checked)}
+                                        />
+                                        <div className="flex flex-col">
+                                            <span className="text-[10px] font-black text-emerald-400 uppercase tracking-widest">Converter em Aluno</span>
+                                            <span className="text-[8px] text-slate-500 font-bold">Marque se o aluno fechou o plano</span>
+                                        </div>
+                                    </label>
+                                </div>
+
+                                <p className="text-[10px] font-black text-primary uppercase tracking-widest ml-1 mt-6">Agendamento</p>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Data da Aula</label>
+                                        <input
+                                            type="date"
+                                            value={scheduledDate}
+                                            onChange={(e) => setScheduledDate(e.target.value)}
+                                            className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Horário</label>
+                                        <input
+                                            type="time"
+                                            value={scheduledTime}
+                                            onChange={(e) => setScheduledTime(e.target.value)}
+                                            className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm"
+                                        />
+                                    </div>
+                                </div>
+
                                 <div className="space-y-2">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Horário</label>
-                                    <input
-                                        type="time"
-                                        value={scheduledTime}
-                                        onChange={(e) => setScheduledTime(e.target.value)}
-                                        className="w-full h-14 bg-slate-900 border-2 border-slate-800 rounded-2xl px-5 text-white focus:border-primary outline-none transition-all font-bold"
-                                    />
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Professor Responsável</label>
+                                    <select
+                                        value={selectedTeacherId}
+                                        onChange={(e) => setSelectedTeacherId(e.target.value)}
+                                        className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm appearance-none"
+                                    >
+                                        <option value="">Selecionar Professor...</option>
+                                        {teachers.map(t => (
+                                            <option key={t.id} value={t.id}>{t.name}</option>
+                                        ))}
+                                    </select>
+                                </div>
+
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-widest ml-1">Quadra</label>
+                                    <select
+                                        value={selectedCourtId}
+                                        onChange={(e) => setSelectedCourtId(e.target.value)}
+                                        className="w-full h-12 bg-slate-900 border-2 border-slate-800 rounded-2xl px-4 text-white focus:border-primary outline-none transition-all font-bold text-sm appearance-none"
+                                    >
+                                        <option value="">Selecionar Quadra...</option>
+                                        {courts.map(c => (
+                                            <option key={c.id} value={c.id}>{c.name}</option>
+                                        ))}
+                                    </select>
                                 </div>
                                 <div className="bg-slate-900/50 p-4 rounded-2xl border border-slate-800 flex justify-between items-center">
                                     <div className="flex flex-col">
@@ -397,10 +650,88 @@ export default function TrialClassesAdminPage() {
                                         onClick={handleSaveSchedule}
                                         className="flex-[2] h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-xs tracking-widest shadow-xl shadow-primary/20 transition-all flex items-center justify-center gap-2"
                                     >
-                                        Confirmar Agendamento
+                                        {modalStatus === "COMPLETED" ? "Finalizar e Salvar" : "Confirmar Agendamento"}
                                         <span className="material-symbols-outlined">check_circle</span>
                                     </button>
                                 </div>
+                            </div>
+                        </div>
+                    </div>
+                )}
+
+                {/* Automation Confirmation Modal */}
+                {isAutoModalOpen && (
+                    <div className="fixed inset-0 z-[110] flex items-center justify-center p-6 backdrop-blur-md bg-black/70 animate-in fade-in duration-300">
+                        <div className="bg-[#1c222c] border border-slate-800 rounded-[40px] w-full max-w-2xl overflow-hidden shadow-2xl animate-in zoom-in-95 duration-300">
+                            <div className="p-8 border-b border-slate-800 bg-slate-900/50 flex justify-between items-center">
+                                <div>
+                                    <h3 className="text-2xl font-black text-white italic uppercase tracking-tighter">Disparar Automação</h3>
+                                    <p className="text-slate-500 text-xs font-bold uppercase tracking-widest">Etapa: <span className="text-primary">{autoModalStage}</span></p>
+                                </div>
+                                <button onClick={() => setIsAutoModalOpen(false)} className="size-10 rounded-full hover:bg-slate-800 text-slate-500 flex items-center justify-center transition-all">
+                                    <span className="material-symbols-outlined">close</span>
+                                </button>
+                            </div>
+
+                            <div className="p-8 grid grid-cols-1 md:grid-cols-2 gap-8 max-h-[60vh] overflow-y-auto custom-scrollbar">
+                                {/* Preview Student */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-primary">
+                                        <span className="material-symbols-outlined text-sm">person</span>
+                                        <label className="text-[10px] font-black uppercase tracking-widest">Preview Aluno</label>
+                                    </div>
+                                    <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-sm text-slate-300 whitespace-pre-wrap font-medium">
+                                        {autoPreview.student || "Nenhuma mensagem configurada."}
+                                    </div>
+                                </div>
+
+                                {/* Preview Teacher */}
+                                <div className="space-y-3">
+                                    <div className="flex items-center gap-2 text-emerald-400">
+                                        <span className="material-symbols-outlined text-sm">school</span>
+                                        <label className="text-[10px] font-black uppercase tracking-widest">Preview Professor</label>
+                                    </div>
+                                    <div className="bg-slate-900/80 p-4 rounded-2xl border border-slate-800 text-sm text-slate-300 whitespace-pre-wrap font-medium">
+                                        {autoPreview.teacher || "Nenhuma mensagem configurada."}
+                                    </div>
+                                </div>
+                            </div>
+
+                            <div className="p-8 bg-slate-900/30 border-t border-slate-800">
+                                <p className="text-[10px] font-black text-slate-500 uppercase tracking-widest text-center mb-6">Escolha quem deve receber as mensagens agora:</p>
+                                <div className="grid grid-cols-1 md:grid-cols-3 gap-4">
+                                    <button
+                                        onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "STUDENT"); setIsAutoModalOpen(false); }}
+                                        className="h-14 bg-slate-800 hover:bg-primary/20 hover:text-primary text-slate-300 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border border-slate-700 hover:border-primary/30 flex flex-col items-center justify-center gap-1"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">person</span>
+                                        Apenas Aluno
+                                    </button>
+                                    <button
+                                        onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "TEACHER"); setIsAutoModalOpen(false); }}
+                                        className="h-14 bg-slate-800 hover:bg-emerald-500/20 hover:text-emerald-400 text-slate-300 rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all border border-slate-700 hover:border-emerald-500/30 flex flex-col items-center justify-center gap-1"
+                                    >
+                                        <span className="material-symbols-outlined text-xl">school</span>
+                                        Apenas Professor
+                                    </button>
+                                    <button
+                                        onClick={() => { sendAutomatedMessages(autoModalTarget!, autoModalStage, autoModalTeacherId, autoModalCourtId, autoModalDate, "BOTH"); setIsAutoModalOpen(false); }}
+                                        className="h-14 bg-primary hover:bg-primary/90 text-white rounded-2xl font-black uppercase text-[10px] tracking-widest transition-all shadow-xl shadow-primary/20 flex flex-col items-center justify-center gap-1"
+                                    >
+                                        <div className="flex gap-1 items-center">
+                                            <span className="material-symbols-outlined text-sm">person</span>
+                                            <span className="text-xs">+</span>
+                                            <span className="material-symbols-outlined text-sm">school</span>
+                                        </div>
+                                        Ambos
+                                    </button>
+                                </div>
+                                <button
+                                    onClick={() => setIsAutoModalOpen(false)}
+                                    className="w-full mt-4 h-10 text-slate-600 hover:text-slate-400 text-[10px] font-black uppercase tracking-widest transition-all"
+                                >
+                                    Pular e não enviar nada
+                                </button>
                             </div>
                         </div>
                     </div>
@@ -441,6 +772,20 @@ function CalendarView({ data, onOpenReg }: { data: TrialClass[], onOpenReg: (reg
                                 <div>
                                     <h4 className="font-black text-white italic">{reg.name}</h4>
                                     <p className="text-[10px] text-slate-500 font-bold uppercase">{reg.level} - {reg.sport}</p>
+                                    <div className="flex gap-2 mt-2">
+                                        {reg.teacher && (
+                                            <span className="text-[8px] bg-slate-800 text-slate-400 px-2 py-0.5 rounded font-black flex items-center gap-1">
+                                                <span className="material-symbols-outlined text-[10px]">school</span>
+                                                {reg.teacher.name}
+                                            </span>
+                                        )}
+                                        {reg.court && (
+                                            <span className="text-[8px] px-2 py-0.5 rounded font-black flex items-center gap-1" style={{ backgroundColor: `${reg.court.color}20`, color: reg.court.color }}>
+                                                <span className="material-symbols-outlined text-[10px]">sports_tennis</span>
+                                                {reg.court.name}
+                                            </span>
+                                        )}
+                                    </div>
                                 </div>
                                 <div className="flex gap-2">
                                     <button
@@ -480,12 +825,25 @@ function KanbanCard({ reg, onArchive, onUpdate, onSetDate, onAddTag, onRemoveTag
             draggable
             onDragStart={onDragStart}
             onDragEnd={onDragEnd}
-            className="bg-[#1c222c] border border-slate-800/80 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-all group border-l-4 border-l-primary/30 cursor-grab active:cursor-grabbing active:scale-95 active:rotate-1"
+            className={`bg-[#1c222c] border border-slate-800/80 rounded-2xl p-4 shadow-xl hover:shadow-2xl transition-all group border-l-4 cursor-grab active:cursor-grabbing active:scale-95 active:rotate-1 ${reg.status === 'COMPLETED' ? 'border-l-emerald-400' :
+                reg.status === 'CONFIRMED' ? 'border-l-primary' :
+                    reg.status === 'CANCELLED' ? 'border-l-red-400' :
+                        'border-l-amber-400/50'
+                }`}
         >
             <div className="flex justify-between items-start mb-3">
                 <div>
                     <h4 className="font-black text-white italic text-sm">{reg.name}</h4>
-                    <p className="text-[10px] text-slate-500 font-bold">{reg.phone}</p>
+                    <div className="flex flex-col">
+                        <p className="text-[10px] text-slate-500 font-bold">{reg.phone}</p>
+                        {(reg.email || reg.cpf) && (
+                            <div className="flex gap-2 mt-0.5">
+                                {reg.email && <span className="material-symbols-outlined text-[12px] text-slate-600" title={reg.email}>mail</span>}
+                                {reg.cpf && <span className="material-symbols-outlined text-[12px] text-slate-600" title={reg.cpf}>badge</span>}
+                                {reg.birthDate && <span className="material-symbols-outlined text-[12px] text-slate-600" title={reg.birthDate}>cake</span>}
+                            </div>
+                        )}
+                    </div>
                 </div>
                 <div className="flex gap-1 opactiy-0 group-hover:opacity-100 transition-opacity">
                     <button onClick={onArchive} className="p-1 hover:bg-slate-700 rounded text-slate-500"><span className="material-symbols-outlined text-sm">archive</span></button>
@@ -516,6 +874,22 @@ function KanbanCard({ reg, onArchive, onUpdate, onSetDate, onAddTag, onRemoveTag
                     <div className="flex items-center gap-2 text-emerald-400">
                         <span className="material-symbols-outlined text-[14px]">event_available</span>
                         <span className="text-[10px] font-black">Marcada: {new Date(reg.scheduledDate).toLocaleString('pt-BR', { dateStyle: 'short', timeStyle: 'short' })}</span>
+                    </div>
+                )}
+                {(reg.teacher || reg.court) && (
+                    <div className="flex flex-wrap gap-2 pt-1 border-t border-slate-800 mt-1">
+                        {reg.teacher && (
+                            <div className="flex items-center gap-1 text-[9px] text-slate-500 font-bold italic">
+                                <span className="material-symbols-outlined text-[12px]">school</span>
+                                {reg.teacher.name}
+                            </div>
+                        )}
+                        {reg.court && (
+                            <div className="flex items-center gap-1 text-[9px] font-black" style={{ color: reg.court.color }}>
+                                <span className="material-symbols-outlined text-[12px]">sports_tennis</span>
+                                {reg.court.name}
+                            </div>
+                        )}
                     </div>
                 )}
             </div>

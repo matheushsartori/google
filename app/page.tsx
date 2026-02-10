@@ -7,7 +7,7 @@ import axios from "axios";
 
 export default function Home() {
     const [data, setData] = useState({
-        stats: { total: 0, active: 0, scheduled: 0, conversion: 0 },
+        stats: { total: 0, active: 0, scheduled: 0, completed: 0, converted: 0, conversion: 0 },
         recentActivity: [] as any[]
     });
     const [loading, setLoading] = useState(true);
@@ -20,10 +20,10 @@ export default function Home() {
     }, []);
 
     const stats = [
-        { label: "Total de Leads", value: data.stats.total, icon: "group", change: data.stats.total > 0 ? "+12%" : null, color: "text-blue-500" },
-        { label: "Em Atendimento", value: data.stats.active, icon: "chat", change: data.stats.active > 0 ? "+5%" : null, color: "text-emerald-500" },
-        { label: "Agendamentos", value: data.stats.scheduled, icon: "event", change: data.stats.scheduled > 0 ? "+8%" : null, color: "text-purple-500" },
-        { label: "Taxa de Conversão", value: `${data.stats.conversion}%`, icon: "trending_up", change: data.stats.conversion > 0 ? "+2%" : null, color: "text-orange-500" },
+        { label: "Total de Oportunidades", value: data.stats.total, icon: "analytics", color: "text-blue-500" },
+        { label: "Em Atendimento", value: data.stats.active, icon: "chat", color: "text-amber-500" },
+        { label: "Aulas Marcadas", value: data.stats.scheduled, icon: "event", color: "text-primary" },
+        { label: "Conversões (Alunos)", value: data.stats.converted, icon: "verified_user", color: "text-emerald-500" },
     ];
 
     return (
@@ -52,12 +52,7 @@ export default function Home() {
                                         <div className={`p-3 rounded-xl bg-slate-900/50 group-hover:bg-[#d4af37]/10 transition-colors ${stat.color} group-hover:text-[#d4af37]`}>
                                             <span className="material-symbols-outlined">{stat.icon}</span>
                                         </div>
-                                        {stat.change && (
-                                            <span className="text-[10px] font-black text-emerald-400 bg-emerald-500/10 px-2 py-1 rounded-full flex items-center gap-1 uppercase tracking-wider">
-                                                <span className="material-symbols-outlined text-[10px]">arrow_upward</span>
-                                                {stat.change}
-                                            </span>
-                                        )}
+                                        <div />
                                     </div>
                                     <h3 className="text-3xl font-black text-white mb-1 tracking-tight group-hover:scale-105 transition-transform origin-left">{loading ? "..." : stat.value}</h3>
                                     <p className="text-slate-500 text-[10px] font-black uppercase tracking-[0.2em]">{stat.label}</p>

@@ -58,6 +58,16 @@ export function Sidebar() {
                         <p className="text-sm font-semibold">Leads</p>
                     </Link>
 
+                    <Link href="/professores" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer group ${isActive("/professores")}`}>
+                        <span className="material-symbols-outlined text-[20px]">school</span>
+                        <p className="text-sm font-semibold">Professores</p>
+                    </Link>
+
+                    <Link href="/quadras" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer group ${isActive("/quadras")}`}>
+                        <span className="material-symbols-outlined text-[20px]">sports_tennis</span>
+                        <p className="text-sm font-semibold">Quadras</p>
+                    </Link>
+
                     <Link href="/chat" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer group ${isActive("/chat")}`}>
                         <span className="material-symbols-outlined text-[20px]">chat</span>
                         <p className="text-sm font-semibold">Monitoramento</p>
@@ -74,6 +84,11 @@ export function Sidebar() {
                         <div className="ml-auto flex items-center">
                             <span className="text-[9px] bg-primary/20 text-primary px-1.5 py-0.5 rounded font-black">TESTE</span>
                         </div>
+                    </Link>
+
+                    <Link href="/automacoes" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer group ${isActive("/automacoes")}`}>
+                        <span className="material-symbols-outlined text-[20px]">bolt</span>
+                        <p className="text-sm font-semibold">Automações</p>
                     </Link>
 
                     <Link href="/logs" className={`flex items-center gap-3 px-3 py-2.5 rounded-lg transition-colors cursor-pointer group ${isActive("/logs")}`}>

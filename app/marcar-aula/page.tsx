@@ -21,6 +21,9 @@ export default function PublicTrialClassPage() {
     // Form State
     const [name, setName] = useState("");
     const [phone, setPhone] = useState("");
+    const [email, setEmail] = useState("");
+    const [cpf, setCpf] = useState("");
+    const [birthDate, setBirthDate] = useState("");
     const [level, setLevel] = useState("");
     const [sport] = useState("Tênis");
     const [selectedDays, setSelectedDays] = useState<string[]>([]);
@@ -63,6 +66,9 @@ export default function PublicTrialClassPage() {
             await axios.post("/api/marcar-aula", {
                 name,
                 phone,
+                email,
+                cpf,
+                birthDate,
                 sport,
                 level,
                 availability: { days: selectedDays, period },
@@ -160,7 +166,7 @@ export default function PublicTrialClassPage() {
                                         value={name}
                                         onChange={(e) => setName(e.target.value)}
                                         className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
-                                        placeholder="Seu nome aqui"
+                                        placeholder="Seu nome completo"
                                     />
                                 </div>
                                 <div className="space-y-2">
@@ -171,6 +177,36 @@ export default function PublicTrialClassPage() {
                                         className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
                                         placeholder="(41) 99999-9999"
                                     />
+                                </div>
+                                <div className="space-y-2">
+                                    <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">E-mail</label>
+                                    <input
+                                        type="email"
+                                        value={email}
+                                        onChange={(e) => setEmail(e.target.value)}
+                                        className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                                        placeholder="seu@email.com"
+                                    />
+                                </div>
+                                <div className="grid grid-cols-2 gap-4">
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">CPF</label>
+                                        <input
+                                            value={cpf}
+                                            onChange={(e) => setCpf(e.target.value)}
+                                            className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                                            placeholder="000.000.000-00"
+                                        />
+                                    </div>
+                                    <div className="space-y-2">
+                                        <label className="text-[10px] font-black text-slate-400 uppercase tracking-widest ml-1">Data Nasc.</label>
+                                        <input
+                                            type="date"
+                                            value={birthDate}
+                                            onChange={(e) => setBirthDate(e.target.value)}
+                                            className="w-full h-14 bg-slate-800/50 border-2 border-slate-700 rounded-2xl px-5 text-white focus:ring-2 focus:ring-primary outline-none font-bold transition-all"
+                                        />
+                                    </div>
                                 </div>
                             </div>
                             <button
