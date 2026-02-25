@@ -1,0 +1,80 @@
+{
+  "existingOnUazAPI": [],
+  "existingOnDB": [],
+  "action": "CREATED_NEW",
+  "createStatus": 200,
+  "createData": {
+    "info": "",
+    "instance": {
+      "id": "r840a7b99457539",
+      "token": "119e3db5-d34e-436e-b745-76457637b02b",
+      "status": "disconnected",
+      "paircode": "",
+      "qrcode": "",
+      "name": "merces-tenis",
+      "profileName": "",
+      "profilePicUrl": "",
+      "isBusiness": false,
+      "plataform": "",
+      "systemName": "Mercês Tênis",
+      "owner": "",
+      "current_presence": "unavailable",
+      "lastDisconnect": "",
+      "lastDisconnectReason": "",
+      "adminField01": "",
+      "adminField02": "",
+      "openai_apikey": "",
+      "chatbot_enabled": false,
+      "chatbot_ignoreGroups": false,
+      "chatbot_stopConversation": "",
+      "chatbot_stopMinutes": 0,
+      "chatbot_stopWhenYouSendMsg": 0,
+      "created": "2026-02-25 14:24:20.569Z",
+      "updated": "2026-02-25 14:24:20.569Z",
+      "currentTime": "2026-02-25 14:24:20.569Z",
+      "msg_delay_min": 1,
+      "msg_delay_max": 3
+    },
+    "name": "merces-tenis",
+    "response": "Instance created successfully",
+    "status": {
+      "connected": false,
+      "jid": null,
+      "loggedIn": false
+    },
+    "token": "119e3db5-d34e-436e-b745-76457637b02b"
+  },
+  "token": "119e3db5-d34e-436e-b745-76457637b02b",
+  "webhookStatus": 200,
+  "webhookData": [
+    {
+      "addUrlEvents": false,
+      "addUrlTypesMessages": false,
+      "enabled": true,
+      "events": [
+        "messages",
+        "connection",
+        "messages_update"
+      ],
+      "excludeMessages": [],
+      "id": "r313b4933573fa5",
+      "url": "https://auto.mercestenis.com.br/api/webhook"
+    }
+  ],
+  "finalDB": [
+    {
+      "name": "merces-tenis",
+      "instanceId": "merces-tenis",
+      "token": "119e3db5-d34e-436e-b745-76457637b02b",
+      "status": "DISCONNECTED",
+      "webhookStatus": "ACTIVE"
+    }
+  ],
+  "finalUazAPI": [
+    {
+      "name": "merces-tenis",
+      "token": "119e3db5-d34e-436e-b745-76457637b02b",
+      "status": "disconnected"
+    }
+  ]
+}

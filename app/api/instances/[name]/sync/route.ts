@@ -1,59 +1,29 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { getInstanceStatus } from "@/lib/uazapi";
 
+/**
+ * POST /api/instances/[name]/sync
+ * Sincroniza o status de uma instância com a UazAPI
+ */
 export async function POST(
-    request: Request,
+    _request: Request,
     { params }: { params: Promise<{ name: string }> }
 ) {
     try {
         const { name } = await params;
 
-        // 1. Get Evolution API Settings
-        const settings = await prisma.settings.findMany();
-        const settingsMap = settings.reduce((acc, curr) => {
-            acc[curr.key] = curr.value;
-            return acc;
-        }, {} as Record<string, string>);
+        const data = await getInstanceStatus(name);
 
-        let apiUrl = settingsMap["EVOLUTION_API_URL"];
-        const apiToken = settingsMap["EVOLUTION_API_TOKEN"];
+        // UazAPI retorna:
+        // { instance: { status: "connected"|"disconnected"|"connecting", token, ... }, status: { connected, jid, loggedIn } }
+        const isConnected = data.status?.connected === true || data.instance?.status === "connected";
 
-        if (!apiUrl || !apiToken) {
-            return NextResponse.json({ error: "Evolution API settings not configured" }, { status: 400 });
-        }
-
-        apiUrl = apiUrl.replace(/\/$/, "");
-
-        // 2. Fetch instance status from Evolution API
-        const evolutionResponse = await fetch(`${apiUrl}/instance/fetchInstances?instanceName=${name}`, {
-            method: "GET",
-            headers: {
-                "apikey": apiToken,
-            },
-        });
-
-        if (!evolutionResponse.ok) {
-            return NextResponse.json({ error: "Failed to fetch instance status from Evolution API" }, { status: evolutionResponse.status });
-        }
-
-        const evoData = await evolutionResponse.json();
-
-        // Evolution API returns an array, find our instance
-        const instanceData = Array.isArray(evoData) ? evoData.find((i: any) => i.instance?.instanceName === name) : evoData;
-
-        if (!instanceData) {
-            return NextResponse.json({ error: "Instance not found in Evolution API" }, { status: 404 });
-        }
-
-        // Determine status
-        const connectionStatus = instanceData.instance?.state || instanceData.state || "close";
-        const isConnected = connectionStatus === "open";
-
-        // 3. Update local database
         await prisma.connectionInstance.update({
             where: { instanceId: name },
             data: {
                 status: isConnected ? "CONNECTED" : "DISCONNECTED",
+                token: data.instance?.token || undefined,
                 lastSync: new Date(),
             },
         });
@@ -61,7 +31,8 @@ export async function POST(
         return NextResponse.json({
             success: true,
             status: isConnected ? "CONNECTED" : "DISCONNECTED",
-            rawStatus: connectionStatus
+            rawStatus: data.instance?.status,
+            jid: data.status?.jid,
         });
     } catch (error: any) {
         console.error("Error syncing instance status:", error);

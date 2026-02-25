@@ -1,10 +1,38 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { listAllInstances } from "@/lib/uazapi";
 
 export async function GET() {
     try {
-        const instances = await prisma.connectionInstance.findMany();
-        return NextResponse.json(instances);
+        // 1. Buscar instâncias do banco local
+        const localInstances = await prisma.connectionInstance.findMany();
+
+        // 2. Sincronizar com UazAPI (busca status e token reais)
+        try {
+            const evoInstances = await listAllInstances();
+
+            for (const local of localInstances) {
+                const uazInst = evoInstances.find((e: any) => e.name === local.instanceId);
+                if (uazInst) {
+                    const isConnected = uazInst.status === "connected";
+                    await prisma.connectionInstance.update({
+                        where: { instanceId: local.instanceId },
+                        data: {
+                            status: isConnected ? "CONNECTED" : "DISCONNECTED",
+                            token: uazInst.token || local.token,
+                            lastSync: new Date(),
+                        },
+                    });
+                }
+            }
+        } catch (syncError) {
+            console.error("Erro ao sincronizar com UazAPI:", syncError);
+            // Retorna dados locais mesmo se falhar
+        }
+
+        // 3. Retornar dados atualizados
+        const updated = await prisma.connectionInstance.findMany();
+        return NextResponse.json(updated);
     } catch (error) {
         return NextResponse.json({ error: "Failed to fetch instances" }, { status: 500 });
     }
@@ -13,108 +41,100 @@ export async function GET() {
 export async function POST(request: Request) {
     try {
         const body = await request.json();
-        const { name, token, integration } = body;
-
-        console.log(`🚀 Tentando criar instância: ${name}`);
+        const { name, systemName } = body;
 
         if (!name) {
             return NextResponse.json({ error: "O nome da instância é obrigatório" }, { status: 400 });
         }
 
-        // 1. Get Evolution API Settings
+        console.log(`🚀 Criando instância na UazAPI: ${name}`);
+
+        // 1. Verificar configurações
         const settings = await prisma.settings.findMany();
         const settingsMap = settings.reduce((acc, curr) => {
             acc[curr.key] = curr.value;
             return acc;
         }, {} as Record<string, string>);
 
-        let apiUrl = settingsMap["EVOLUTION_API_URL"];
-        const apiToken = settingsMap["EVOLUTION_API_TOKEN"];
+        const apiUrl = settingsMap["UAZAPI_URL"]?.replace(/\/$/, "");
+        const adminToken = settingsMap["UAZAPI_ADMIN_TOKEN"]?.trim();
 
-        if (!apiUrl || !apiToken) {
-            return NextResponse.json({ error: "Configurações da Evolution API não encontradas. Configure em Ajustes primeiro." }, { status: 400 });
+        if (!apiUrl || !adminToken) {
+            return NextResponse.json({
+                error: "UazAPI não configurada. Configure UAZAPI_URL e UAZAPI_ADMIN_TOKEN em Ajustes."
+            }, { status: 400 });
         }
 
-        // Sanitize URL (remover barra no final se existir)
-        apiUrl = apiUrl.replace(/\/$/, "");
+        // 2. Criar instância na UazAPI
+        const uazRes = await fetch(`${apiUrl}/instance/init`, {
+            method: "POST",
+            headers: {
+                "Content-Type": "application/json",
+                "admintoken": adminToken,
+            },
+            body: JSON.stringify({
+                name,
+                systemName: systemName || name,
+            }),
+        });
 
-        // 2. Create instance on Evolution API
-        // Include webhook configuration directly in the creation payload
-        const payload = {
-            instanceName: name,
-            token: token || "22",
-            qrcode: true,
-            integration: "WHATSAPP-BAILEYS",
-            webhook: {
-                url: "https://google-iota-tan.vercel.app/api/webhook",
-                byEvents: false,
-                base64: false,
-                events: [
-                    "QRCODE_UPDATED",
-                    "CONNECTION_UPDATE",
-                    "MESSAGES_UPSERT",
-                    "MESSAGES_UPDATE",
-                    "SEND_MESSAGE"
-                ]
-            }
-        };
+        const uazData = await uazRes.json();
 
-        console.log("🚀 Enviando para Evolution API:", JSON.stringify(payload, null, 2));
+        if (!uazRes.ok) {
+            console.error("❌ UazAPI create error:", uazData);
+            return NextResponse.json({
+                error: uazData?.message || "Erro ao criar instância na UazAPI",
+                details: uazData,
+            }, { status: uazRes.status });
+        }
 
+        // Token fica em data.token (nível raiz) e também em data.instance.token
+        const instanceToken = uazData.token || uazData.instance?.token;
+
+        console.log(`✅ Instância criada. Token: ${instanceToken}`);
+
+        // 3. Configurar webhook automaticamente
+        const webhookUrl = settingsMap["WEBHOOK_URL"] || "https://auto.mercestenis.com.br/api/webhook";
         try {
-            const evolutionResponse = await fetch(`${apiUrl}/instance/create`, {
+            await fetch(`${apiUrl}/webhook`, {
                 method: "POST",
                 headers: {
                     "Content-Type": "application/json",
-                    "apikey": apiToken,
+                    "token": instanceToken,
                 },
-                body: JSON.stringify(payload),
+                body: JSON.stringify({
+                    enabled: true,
+                    url: webhookUrl,
+                    events: ["messages", "connection"],
+                }),
             });
-
-            const evoData = await evolutionResponse.json();
-
-            if (!evolutionResponse.ok) {
-                console.error("❌ Resposta de erro da Evolution API:", JSON.stringify(evoData, null, 2));
-                return NextResponse.json({
-                    error: evoData.response?.message?.[0] || evoData.message || "Erro retornado pela Evolution API",
-                    details: evoData
-                }, { status: evolutionResponse.status });
-            }
-
-            console.log("✅ Instância criada na Evolution API com sucesso");
-            console.log("✅ Webhook configurado automaticamente na criação");
-
-            // 3. Save to local DB (using instanceName as instanceId)
-            const instance = await prisma.connectionInstance.upsert({
-                where: { instanceId: name },
-                update: {
-                    name: name,
-                    instanceId: name,
-                    token: token || "22",
-                    status: "DISCONNECTED",
-                    webhookStatus: "ACTIVE",
-                },
-                create: {
-                    name: name,
-                    instanceId: name,
-                    token: token || "22",
-                    status: "DISCONNECTED",
-                    webhookStatus: "ACTIVE",
-                },
-            });
-
-            return NextResponse.json(instance);
-        } catch (fetchError: any) {
-            console.error("❌ Erro de conexão com a Evolution API:", fetchError);
-            return NextResponse.json({
-                error: "Não foi possível conectar à Evolution API. Verifique se a URL está correta e a API está online.",
-                details: fetchError.message
-            }, { status: 502 });
+            console.log(`✅ Webhook configurado: ${webhookUrl}`);
+        } catch (webhookErr) {
+            console.error("⚠️ Webhook config failed (non-fatal):", webhookErr);
         }
+
+        // 4. Salvar no banco local
+        const instance = await prisma.connectionInstance.upsert({
+            where: { instanceId: name },
+            update: {
+                name,
+                instanceId: name,
+                token: instanceToken,
+                status: "DISCONNECTED",
+                webhookStatus: "ACTIVE",
+            },
+            create: {
+                name,
+                instanceId: name,
+                token: instanceToken,
+                status: "DISCONNECTED",
+                webhookStatus: "ACTIVE",
+            },
+        });
+
+        return NextResponse.json(instance);
     } catch (error: any) {
         console.error("❌ Erro interno:", error);
-        return NextResponse.json({ error: error.message || "Erro interno ao processar requisição" }, { status: 500 });
+        return NextResponse.json({ error: error.message || "Erro interno" }, { status: 500 });
     }
 }
-
-

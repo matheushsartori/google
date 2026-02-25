@@ -1,0 +1,81 @@
+{
+  "listInstances": {
+    "status": 404,
+    "data": {
+      "code": 404,
+      "message": "Not Found.",
+      "data": {}
+    }
+  },
+  "adminInstances": {
+    "status": 404,
+    "data": {
+      "code": 404,
+      "message": "Not Found.",
+      "data": {}
+    }
+  },
+  "instance": {
+    "status": 404,
+    "data": {
+      "code": 404,
+      "message": "Not Found.",
+      "data": {}
+    }
+  },
+  "createInstance": {
+    "status": 401,
+    "data": {
+      "error": "Unauthorized"
+    }
+  },
+  "postInstances": {
+    "status": 405,
+    "data": {
+      "code": 405,
+      "message": "Method Not Allowed.",
+      "data": {}
+    }
+  },
+  "status": {
+    "status": 200,
+    "data": {
+      "connected_instances": 0,
+      "dc": "dc01",
+      "info": "Server is up but no instances connected",
+      "status": "warning"
+    }
+  },
+  "info": {
+    "status": 404,
+    "data": {
+      "code": 404,
+      "message": "Not Found.",
+      "data": {}
+    }
+  },
+  "GET_/": {
+    "status": 404,
+    "preview": "{\"code\":404,\"message\":\"Not Found.\",\"data\":{}}"
+  },
+  "GET_/health": {
+    "status": 404,
+    "preview": "{\"code\":404,\"message\":\"Not Found.\",\"data\":{}}"
+  },
+  "GET_/ping": {
+    "status": 404,
+    "preview": "{\"code\":404,\"message\":\"Not Found.\",\"data\":{}}"
+  },
+  "GET_/api": {
+    "status": 404,
+    "preview": "{\"code\":404,\"message\":\"Not Found.\",\"data\":{}}"
+  },
+  "GET_/api/instances": {
+    "status": 404,
+    "preview": "{\"code\":404,\"message\":\"Not Found.\",\"data\":{}}"
+  },
+  "GET_/manager/instances": {
+    "status": 404,
+    "preview": "{\"code\":404,\"message\":\"Not Found.\",\"data\":{}}"
+  }
+}

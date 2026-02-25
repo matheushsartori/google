@@ -1,10 +1,10 @@
 import { NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
-import { sendMessage, sendPresence } from "@/lib/evolution";
+import { sendMessage, sendPresence } from "@/lib/uazapi";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
-// Evolution API faz um GET para validar o endpoint antes de registrar o webhook
+// UazAPI (e qualquer cliente) faz um GET para validar o endpoint
 export async function GET() {
     return NextResponse.json({ success: true, message: "Webhook endpoint is alive" });
 }
@@ -14,14 +14,32 @@ export async function POST(request: Request) {
         const body = await request.json();
         console.log("📩 Webhook Received:", JSON.stringify(body, null, 2));
 
-        const { event, instance, data } = body;
+        /**
+         * UazAPI webhook format:
+         * {
+         *   event: "messages" | "connection" | "contacts" | "presence",
+         *   instance: { id, token, name, ... },
+         *   data: { ... }  (ou direto no body dependendo do evento)
+         * }
+         * 
+         * Para "connection":
+         * { event: "connection", instance: {...}, data: { status: "connected"|"disconnected"|"connecting", ... } }
+         * 
+         * Para "messages":
+         * { event: "messages", instance: {...}, data: { key: { remoteJid, fromMe, id }, message: { conversation, ... }, ... } }
+         */
 
-        // Save webhook log to database
+        const event = body.event || body.type;
+        const instanceInfo = body.instance;
+        const instanceName = instanceInfo?.name || instanceInfo?.id || body.instanceName;
+        const data = body.data || body;
+
+        // Save webhook log
         try {
             await prisma.webhookLog.create({
                 data: {
                     event: event || "UNKNOWN",
-                    instance: instance || null,
+                    instance: instanceName || null,
                     data: body,
                 },
             });
@@ -29,14 +47,12 @@ export async function POST(request: Request) {
             console.error("Error saving webhook log:", logError);
         }
 
-        // Handle connection status updates
-        if (event === "connection.update") {
-            const state = data?.state;
-            const instanceName = instance;
+        // ── Connection event ──────────────────────────────────────────────────
+        if (event === "connection") {
+            const status = data?.status || data?.state;
+            const isConnected = status === "connected" || status === "open";
 
-            if (state && instanceName) {
-                const isConnected = state === "open";
-
+            if (instanceName) {
                 try {
                     await prisma.connectionInstance.updateMany({
                         where: { instanceId: instanceName },
@@ -45,43 +61,46 @@ export async function POST(request: Request) {
                             lastSync: new Date(),
                         },
                     });
-                    console.log(`✅ Status da instância ${instanceName} atualizado para: ${isConnected ? "CONNECTED" : "DISCONNECTED"}`);
+                    console.log(`✅ Instância ${instanceName}: ${isConnected ? "CONNECTED" : "DISCONNECTED"}`);
                 } catch (dbError) {
-                    console.error("Erro ao atualizar status da instância:", dbError);
+                    console.error("Erro ao atualizar status:", dbError);
                 }
             }
-
-            return NextResponse.json({ success: true, message: "Connection status updated" });
+            return NextResponse.json({ success: true });
         }
 
-        // Only process incoming messages (UPSERT)
-        if (event !== "messages.upsert") {
-            return NextResponse.json({ success: true, message: "Ignoring non-upsert event" });
+        // ── Messages event ────────────────────────────────────────────────────
+        if (event !== "messages") {
+            return NextResponse.json({ success: true, message: `Ignoring event: ${event}` });
         }
 
-        const message = data.message;
-        const key = data.key;
+        const message = data.message || data;
+        const key = data.key || {};
 
-        // Ignore messages from me
-        if (key.fromMe) {
+        // Ignorar mensagens enviadas por nós
+        if (key.fromMe === true) {
             return NextResponse.json({ success: true, message: "Ignoring self message" });
         }
 
-        const remoteJid = key.remoteJid;
+        const remoteJid = key.remoteJid || data.remoteJid || "";
 
-        // Ignore Group Messages
+        // Ignorar grupos
         if (remoteJid.includes("@g.us")) {
             return NextResponse.json({ success: true, message: "Ignoring group message" });
         }
 
-        const phone = remoteJid.split("@")[0];
-        const text = message.conversation || message.extendedTextMessage?.text || "";
+        const phone = remoteJid.replace("@s.whatsapp.net", "").replace("@c.us", "");
+        const text = message.conversation
+            || message.extendedTextMessage?.text
+            || message.text
+            || data.text
+            || "";
 
-        if (!text) {
-            return NextResponse.json({ success: true, message: "No text content" });
+        if (!phone || !text) {
+            return NextResponse.json({ success: true, message: "No phone or text content" });
         }
 
-        // 1. Get Settings
+        // 1. Buscar settings
         const settings = await prisma.settings.findMany();
         const settingsMap = settings.reduce((acc, curr) => {
             acc[curr.key] = curr.value;
@@ -91,85 +110,54 @@ export async function POST(request: Request) {
         const aiEnabled = settingsMap["AI_ENABLED"] === "true";
         const flowInterval = parseInt(settingsMap["FLOW_INTERVAL"] || "5") * 1000;
 
-        // 2. Find or Create Lead
-        let lead = await prisma.lead.findUnique({
-            where: { phone },
-        });
-
+        // 2. Encontrar ou criar Lead
+        let lead = await prisma.lead.findUnique({ where: { phone } });
         const isNewLead = !lead;
 
         if (!lead) {
             lead = await prisma.lead.create({
-                data: {
-                    phone,
-                    status: "NEW",
-                    activeBot: true,
-                },
+                data: { phone, status: "NEW", activeBot: true },
             });
         }
 
-        // 3. Save Message in DB
+        // 3. Salvar mensagem
         await prisma.message.create({
-            data: {
-                content: text,
-                sender: "LEAD",
-                leadId: lead.id,
-            },
+            data: { content: text, sender: "LEAD", leadId: lead.id },
         });
 
-        // 4. Handle Flow if AI is disabled and Lead is new
-        if (!aiEnabled) {
-            if (isNewLead || lead.status === "NEW") {
-                // Update lead status to avoid re-triggering
-                await prisma.lead.update({
-                    where: { id: lead.id },
-                    data: { status: "IN_PROGRESS" },
-                });
+        // 4. Flow (se AI desabilitada e lead é novo)
+        if (!aiEnabled && (isNewLead || lead.status === "NEW")) {
+            await prisma.lead.update({
+                where: { id: lead.id },
+                data: { status: "IN_PROGRESS" },
+            });
 
-                // Start Flow Sequence
-                // Msg 1
-                const msg1 = settingsMap["FLOW_MSG_1"] || "Olá! Seja bem-vindo ao Mercês Tênis.";
-                await sendPresence(instance, remoteJid, "composing");
-                await sleep(2000); // Small initial delay
-                await sendMessage(instance, remoteJid, msg1);
+            const msg1 = settingsMap["FLOW_MSG_1"] || "Olá! Seja bem-vindo ao Mercês Tênis.";
+            await sendPresence(instanceName, remoteJid, "composing");
+            await sleep(2000);
+            await sendMessage(instanceName, phone, msg1);
+            await prisma.message.create({ data: { content: msg1, sender: "BOT", leadId: lead.id } });
 
-                await prisma.message.create({
-                    data: { content: msg1, sender: "BOT", leadId: lead.id }
-                });
+            await sleep(flowInterval);
+            const host = request.headers.get("host") || "auto.mercestenis.com.br";
+            const protocol = host.startsWith("localhost") ? "http" : "https";
+            const registrationLink = `${protocol}://${host}/marcar-aula`;
+            let msg2 = settingsMap["FLOW_MSG_2"] || "Aula experimental: {LINK_AULA}";
+            msg2 = msg2.replace("{LINK_AULA}", registrationLink);
 
-                // Msg 2
-                await sleep(flowInterval);
-                const host = request.headers.get("host") || "localhost:3000";
-                const protocol = host.startsWith("localhost") ? "http" : "https";
-                const registrationLink = `${protocol}://${host}/marcar-aula`;
-                let msg2 = settingsMap["FLOW_MSG_2"] || "Aula experimental: {LINK_AULA}";
-                msg2 = msg2.replace("{LINK_AULA}", registrationLink);
+            await sendPresence(instanceName, remoteJid, "composing");
+            await sleep(1500);
+            await sendMessage(instanceName, phone, msg2);
+            await prisma.message.create({ data: { content: msg2, sender: "BOT", leadId: lead.id } });
 
-                await sendPresence(instance, remoteJid, "composing");
-                await sleep(1500);
-                await sendMessage(instance, remoteJid, msg2);
-
-                await prisma.message.create({
-                    data: { content: msg2, sender: "BOT", leadId: lead.id }
-                });
-
-                // Msg 3
-                await sleep(flowInterval);
-                const msg3 = settingsMap["FLOW_MSG_3"] || "Aguardamos seu contato!";
-
-                await sendPresence(instance, remoteJid, "composing");
-                await sleep(1500);
-                await sendMessage(instance, remoteJid, msg3);
-
-                await prisma.message.create({
-                    data: { content: msg3, sender: "BOT", leadId: lead.id }
-                });
-            }
-        } else {
-            // IA logic would go here
-            console.log("🤖 AI is enabled. Processing message through AI engine...");
-            // Placeholder: For now, AI just logs. 
-            // In a real implementation, we would call OpenAI here.
+            await sleep(flowInterval);
+            const msg3 = settingsMap["FLOW_MSG_3"] || "Aguardamos seu contato!";
+            await sendPresence(instanceName, remoteJid, "composing");
+            await sleep(1500);
+            await sendMessage(instanceName, phone, msg3);
+            await prisma.message.create({ data: { content: msg3, sender: "BOT", leadId: lead.id } });
+        } else if (aiEnabled) {
+            console.log("🤖 AI enabled - processing through AI engine...");
         }
 
         return NextResponse.json({ success: true });

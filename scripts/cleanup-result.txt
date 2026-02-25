@@ -1,0 +1,20 @@
+﻿=== LIMPEZA DE INST├éNCIAS ===
+
+­ƒôï Buscando inst├óncias na UazAPI...
+  Encontradas: 2 inst├óncia(s)
+
+­ƒùæ´©Å  Deletando "merces-tenis" (token: 2f4392f6-b096-4d1c-8d08-7562b4605e93)...
+  Ô£à Status 200: Instance Deleted
+­ƒùæ´©Å  Deletando "merces-tenis" (token: 046e3149-78d2-4355-950a-f37c005e3c0b)...
+  Ô£à Status 200: Instance Deleted
+
+­ƒùä´©Å  Limpando banco local...
+  Ô£à 1 registro(s) removido(s) do banco
+
+­ƒôï Estado final na UazAPI:
+  Inst├óncias restantes: 0
+  Ô£à UazAPI est├í limpa!
+
+  Banco local: 0 inst├óncia(s)
+
+Ô£à Limpeza conclu├¡da!

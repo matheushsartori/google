@@ -1,53 +1,25 @@
 import { NextRequest, NextResponse } from "next/server";
 import { prisma } from "@/lib/prisma";
+import { deleteInstance } from "@/lib/uazapi";
 
 export async function DELETE(
-    request: NextRequest,
+    _request: NextRequest,
     { params }: { params: Promise<{ name: string }> }
 ) {
     try {
         const { name } = await params;
+        console.log(`🗑️ Deletando instância: ${name}`);
 
-        console.log(`🗑️ Tentando excluir instância: ${name}`);
-
-        // 1. Get Evolution API Settings
-        const settings = await prisma.settings.findMany();
-        const settingsMap = settings.reduce((acc, curr) => {
-            acc[curr.key] = curr.value;
-            return acc;
-        }, {} as Record<string, string>);
-
-        let apiUrl = settingsMap["EVOLUTION_API_URL"];
-        const apiToken = settingsMap["EVOLUTION_API_TOKEN"];
-
-        if (apiUrl && apiToken) {
-            apiUrl = apiUrl.replace(/\/$/, "");
-
-            // Try to delete from Evolution API
-            try {
-                const evolutionResponse = await fetch(`${apiUrl}/instance/delete/${name}`, {
-                    method: "DELETE",
-                    headers: {
-                        "apikey": apiToken,
-                    },
-                });
-
-                if (!evolutionResponse.ok) {
-                    const evoData = await evolutionResponse.json();
-                    console.warn("⚠️ Aviso da Evolution API ao excluir:", evoData);
-                    // We continue anyway to clear local DB even if Evolution fails (e.g. if already deleted there)
-                }
-            } catch (evoError) {
-                console.error("❌ Erro ao conectar com Evolution API para excluir:", evoError);
-            }
+        // 1. Deletar na UazAPI
+        try {
+            await deleteInstance(name);
+            console.log(`✅ Instância ${name} deletada na UazAPI`);
+        } catch (uazErr: any) {
+            console.warn("⚠️ UazAPI delete error (continuando para limpar banco):", uazErr.message);
         }
 
-        // 2. Remove from local DB
-        await prisma.connectionInstance.deleteMany({
-            where: { instanceId: name }
-        });
-
-        console.log(`✅ Instância ${name} removida com sucesso`);
+        // 2. Remover do banco local
+        await prisma.connectionInstance.deleteMany({ where: { instanceId: name } });
 
         return NextResponse.json({ success: true });
     } catch (error: any) {

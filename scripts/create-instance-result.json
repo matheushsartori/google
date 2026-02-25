@@ -1,0 +1,54 @@
+{
+  "status": 201,
+  "payload": {
+    "instanceName": "test-script-1772027287980",
+    "token": "my-test-token-123",
+    "qrcode": true,
+    "integration": "WHATSAPP-BAILEYS",
+    "webhook": {
+      "url": "https://auto.mercestenis.com.br/api/webhook",
+      "byEvents": false,
+      "base64": false,
+      "events": [
+        "QRCODE_UPDATED",
+        "CONNECTION_UPDATE",
+        "MESSAGES_UPSERT",
+        "MESSAGES_UPDATE",
+        "SEND_MESSAGE"
+      ]
+    }
+  },
+  "response": {
+    "instance": {
+      "instanceName": "test-script-1772027287980",
+      "instanceId": "d10118da-1919-48e3-be07-434e1b85fc2c",
+      "integration": "WHATSAPP-BAILEYS",
+      "webhookWaBusiness": null,
+      "accessTokenWaBusiness": "",
+      "status": "connecting"
+    },
+    "hash": "my-test-token-123",
+    "webhook": {
+      "webhookUrl": "https://auto.mercestenis.com.br/api/webhook",
+      "webhookByEvents": false,
+      "webhookBase64": false
+    },
+    "websocket": {},
+    "rabbitmq": {},
+    "nats": {},
+    "sqs": {},
+    "settings": {
+      "rejectCall": false,
+      "msgCall": "",
+      "groupsIgnore": false,
+      "alwaysOnline": false,
+      "readMessages": false,
+      "readStatus": false,
+      "syncFullHistory": false,
+      "wavoipToken": ""
+    },
+    "qrcode": {
+      "count": 0
+    }
+  }
+}

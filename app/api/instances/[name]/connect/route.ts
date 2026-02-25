@@ -1,42 +1,23 @@
 import { NextResponse } from "next/server";
-import { prisma } from "@/lib/prisma";
+import { connectInstance } from "@/lib/uazapi";
 
+/**
+ * GET /api/instances/[name]/connect
+ * Inicia a conexão da instância e retorna QR code ou pair code
+ */
 export async function GET(
-    request: Request,
+    _request: Request,
     { params }: { params: Promise<{ name: string }> }
 ) {
     try {
         const { name } = await params;
+        console.log(`🔗 Conectando instância: ${name}`);
 
-        // 1. Get Evolution API Settings
-        const settings = await prisma.settings.findMany();
-        const settingsMap = settings.reduce((acc, curr) => {
-            acc[curr.key] = curr.value;
-            return acc;
-        }, {} as Record<string, string>);
-
-        const apiUrl = settingsMap["EVOLUTION_API_URL"];
-        const apiToken = settingsMap["EVOLUTION_API_TOKEN"];
-
-        if (!apiUrl || !apiToken) {
-            return NextResponse.json({ error: "Evolution API settings not configured" }, { status: 400 });
-        }
-
-        // 2. Fetch connection status/base64 QR from Evolution API
-        const evolutionResponse = await fetch(`${apiUrl}/instance/connect/${name}`, {
-            method: "GET",
-            headers: {
-                "apikey": apiToken,
-            },
-        });
-
-        const evoData = await evolutionResponse.json();
-
-        // Evolution API v2 might return base64 in different formats depending on state
-        // If already connected, it might return a message
-        return NextResponse.json(evoData);
+        const data = await connectInstance(name);
+        // UazAPI retorna { qrcode: "base64...", paircode: "..." }
+        return NextResponse.json(data);
     } catch (error: any) {
-        console.error(error);
-        return NextResponse.json({ error: error.message || "Failed to fetch connection info" }, { status: 500 });
+        console.error("❌ Connect error:", error);
+        return NextResponse.json({ error: error.message || "Failed to connect instance" }, { status: 500 });
     }
 }

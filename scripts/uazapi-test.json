@@ -1,0 +1,162 @@
+{
+  "listAll": {
+    "status": 200,
+    "data": [
+      {
+        "id": "r85f257f54f8739",
+        "token": "d4f3b1a7-40a9-4b38-afef-dabc8fa8dfe7",
+        "status": "disconnected",
+        "paircode": "",
+        "qrcode": "",
+        "name": "merces-1772028430913",
+        "profileName": "",
+        "profilePicUrl": "",
+        "isBusiness": false,
+        "plataform": "",
+        "systemName": "Mercês Tênis",
+        "owner": "",
+        "current_presence": "unavailable",
+        "lastDisconnect": "",
+        "lastDisconnectReason": "",
+        "adminField01": "",
+        "adminField02": "",
+        "openai_apikey": "",
+        "chatbot_enabled": false,
+        "chatbot_ignoreGroups": false,
+        "chatbot_stopConversation": "",
+        "chatbot_stopMinutes": 0,
+        "chatbot_stopWhenYouSendMsg": 0,
+        "created": "2026-02-25 14:07:10.178Z",
+        "updated": "2026-02-25 14:07:10.178Z",
+        "currentTime": "2026-02-25 14:19:17.949Z",
+        "msg_delay_min": 1,
+        "msg_delay_max": 3
+      }
+    ]
+  },
+  "statusAdmin": {
+    "status": 200,
+    "data": {
+      "connected_instances": 0,
+      "dc": "dc01",
+      "info": "Server is up but no instances connected",
+      "status": "warning"
+    }
+  },
+  "createInstance": {
+    "status": 200,
+    "data": {
+      "info": "",
+      "instance": {
+        "id": "r7b9626ac20d518",
+        "token": "c30aa81e-7be3-4957-9f81-57e7f57344fc",
+        "status": "disconnected",
+        "paircode": "",
+        "qrcode": "",
+        "name": "merces-1772029159002",
+        "profileName": "",
+        "profilePicUrl": "",
+        "isBusiness": false,
+        "plataform": "",
+        "systemName": "Mercês Tênis",
+        "owner": "",
+        "current_presence": "unavailable",
+        "lastDisconnect": "",
+        "lastDisconnectReason": "",
+        "adminField01": "",
+        "adminField02": "",
+        "openai_apikey": "",
+        "chatbot_enabled": false,
+        "chatbot_ignoreGroups": false,
+        "chatbot_stopConversation": "",
+        "chatbot_stopMinutes": 0,
+        "chatbot_stopWhenYouSendMsg": 0,
+        "created": "2026-02-25 14:19:18.267Z",
+        "updated": "2026-02-25 14:19:18.267Z",
+        "currentTime": "2026-02-25 14:19:18.267Z",
+        "msg_delay_min": 1,
+        "msg_delay_max": 3
+      },
+      "name": "merces-1772029159002",
+      "response": "Instance created successfully",
+      "status": {
+        "connected": false,
+        "jid": null,
+        "loggedIn": false
+      },
+      "token": "c30aa81e-7be3-4957-9f81-57e7f57344fc"
+    }
+  },
+  "instanceStatus": {
+    "status": 200,
+    "data": {
+      "instance": {
+        "id": "r7b9626ac20d518",
+        "token": "c30aa81e-7be3-4957-9f81-57e7f57344fc",
+        "status": "disconnected",
+        "paircode": "",
+        "qrcode": "",
+        "name": "merces-1772029159002",
+        "profileName": "",
+        "profilePicUrl": "",
+        "isBusiness": false,
+        "plataform": "",
+        "systemName": "Mercês Tênis",
+        "owner": "",
+        "current_presence": "unavailable",
+        "lastDisconnect": "",
+        "lastDisconnectReason": "",
+        "adminField01": "",
+        "adminField02": "",
+        "openai_apikey": "",
+        "chatbot_enabled": false,
+        "chatbot_ignoreGroups": false,
+        "chatbot_stopConversation": "",
+        "chatbot_stopMinutes": 0,
+        "chatbot_stopWhenYouSendMsg": 0,
+        "created": "2026-02-25 14:19:18.267Z",
+        "updated": "2026-02-25 14:19:18.267Z",
+        "currentTime": "2026-02-25 14:19:18.345Z",
+        "msg_delay_min": 1,
+        "msg_delay_max": 3
+      },
+      "status": {
+        "connected": false,
+        "jid": null,
+        "loggedIn": false
+      }
+    }
+  },
+  "setWebhook": {
+    "status": 200,
+    "data": [
+      {
+        "addUrlEvents": false,
+        "addUrlTypesMessages": false,
+        "enabled": true,
+        "events": [
+          "messages",
+          "connection"
+        ],
+        "excludeMessages": [],
+        "id": "r236ad8c5a1bf05",
+        "url": "https://auto.mercestenis.com.br/api/webhook"
+      }
+    ]
+  },
+  "globalWebhook": {
+    "status": 200,
+    "data": {
+      "addUrlEvents": false,
+      "addUrlTypesMessages": false,
+      "enabled": false,
+      "events": [
+        "messages",
+        "connection"
+      ],
+      "excludeMessages": null,
+      "id": "rfa3b4bd8516563",
+      "url": "https://auto.mercestenis.com.br/api/webhook"
+    }
+  }
+}
