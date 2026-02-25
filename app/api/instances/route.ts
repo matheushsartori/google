@@ -90,12 +90,14 @@ export async function POST(request: Request) {
                 update: {
                     name: name,
                     instanceId: name,
+                    token: token || "22",
                     status: "DISCONNECTED",
                     webhookStatus: "ACTIVE",
                 },
                 create: {
                     name: name,
                     instanceId: name,
+                    token: token || "22",
                     status: "DISCONNECTED",
                     webhookStatus: "ACTIVE",
                 },

@@ -1,0 +1,40 @@
+{
+  "instances": [
+    {
+      "id": "9a8a0d0e-f6e7-46e1-901e-2edec0cab719",
+      "name": "merces2",
+      "instanceId": "merces2",
+      "status": "DISCONNECTED",
+      "version": null,
+      "type": null,
+      "lastSync": null,
+      "webhookStatus": "ACTIVE",
+      "createdAt": "2026-02-25T13:01:47.860Z",
+      "updatedAt": "2026-02-25T13:01:47.860Z"
+    },
+    {
+      "id": "28936810-98fe-4492-b3d6-562a222dbfb8",
+      "name": "test4",
+      "instanceId": "test4",
+      "status": "DISCONNECTED",
+      "version": null,
+      "type": null,
+      "lastSync": null,
+      "webhookStatus": "ACTIVE",
+      "createdAt": "2026-02-25T13:20:58.056Z",
+      "updatedAt": "2026-02-25T13:20:58.056Z"
+    }
+  ],
+  "settings": [
+    {
+      "id": "e4901321-a595-4fc0-96de-ad0746254364",
+      "key": "EVOLUTION_API_URL",
+      "value": "https://evo.wedeveloper.com.br"
+    },
+    {
+      "id": "e0aa8207-a471-40af-bb04-e6992604623e",
+      "key": "EVOLUTION_API_TOKEN",
+      "value": " b79435ae216d2111af1fba84445dbbe4"
+    }
+  ]
+}

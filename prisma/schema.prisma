@@ -55,6 +55,7 @@ model ConnectionInstance {
   id            String    @id @default(uuid())
   name          String    @unique
   instanceId    String    @unique
+  token         String?
   status        String    @default("DISCONNECTED")
   version       String?
   type          String?
