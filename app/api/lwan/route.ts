@@ -27,12 +27,12 @@ export async function GET() {
         });
         const data = await res.json();
 
-        const isConnected = data?.data?.connected || false;
+        const isConnected = data?.instance?.status === "connected";
 
         return NextResponse.json({
             exists: true,
             status: isConnected ? "CONNECTED" : "DISCONNECTED",
-            instance: data?.data
+            instance: data?.instance
         });
     } catch (e: any) {
         return NextResponse.json({ error: e.message }, { status: 500 });
