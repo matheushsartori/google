@@ -29,7 +29,14 @@ export default function LwanConnectPage() {
 
     useEffect(() => {
         fetchStatus();
-        const interval = setInterval(fetchStatus, 10000);
+
+        // Mantém a verificação apenas a cada 5 segundos (a UazAPI demora um pouco a atualizar o status da sessão)
+        const interval = setInterval(() => {
+            fetchStatus();
+
+            // Só regerar o qrcode em loop se já a gente tiver acionado explicitamente via botão
+            // Porém o usuário pediu pra ser via botão "Gerar QR Code", então não chamamos handleConnect aqui 
+        }, 5000);
         return () => clearInterval(interval);
     }, []);
 

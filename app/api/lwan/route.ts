@@ -12,7 +12,7 @@ async function getInstanceToken() {
     });
     if (!res.ok) return null;
     const data = await res.json();
-    const instance = data?.value?.find((i: any) => i.name === INSTANCE_NAME);
+    const instance = (Array.isArray(data) ? data : data?.value || []).find((i: any) => i.name === INSTANCE_NAME);
     return instance?.token || null;
 }
 
