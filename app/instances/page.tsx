@@ -1,4 +1,4 @@
-"use client";
+﻿"use client";
 
 import { Sidebar } from "@/components/Sidebar";
 import { Header } from "@/components/Header";
@@ -31,8 +31,6 @@ export default function InstancesPage() {
     const [selectedId, setSelectedId] = useState<string | null>(null);
     const [isModalOpen, setIsModalOpen] = useState(false);
     const [newInstanceName, setNewInstanceName] = useState("");
-    const [newInstanceToken, setNewInstanceToken] = useState("");
-    const [newInstanceIntegration, setNewInstanceIntegration] = useState("WHATSAPP-BAILEYS");
     const [creating, setCreating] = useState(false);
     const [searchQuery, setSearchQuery] = useState("");
     const [connectionData, setConnectionData] = useState<ConnectionData | null>(null);
@@ -129,12 +127,9 @@ export default function InstancesPage() {
         try {
             const res = await axios.post("/api/instances", {
                 name: newInstanceName,
-                token: newInstanceToken,
-                integration: newInstanceIntegration
             });
             toast.success("Instância criada com sucesso!");
             setNewInstanceName("");
-            setNewInstanceToken("");
             setIsModalOpen(false);
             fetchInstances();
             setSelectedId(res.data.instanceId);
@@ -220,16 +215,11 @@ export default function InstancesPage() {
 
         setActionLoading(true);
         try {
-            const settings = await axios.get("/api/settings");
-            const apiUrl = settings.data["EVOLUTION_API_URL"];
-            const apiToken = settings.data["EVOLUTION_API_TOKEN"];
-
-            const res = await axios.get(`${apiUrl.replace(/\/$/, "")}/instance/pairing/${instanceName}?number=${phone}`, {
-                headers: { apikey: apiToken }
-            });
-
-            if (res.data.code) {
-                alert(`Seu código de pareamento é: ${res.data.code}`);
+            // UazAPI: envia o phone no corpo do connect para gerar pair code
+            const res = await axios.get(`/api/instances/${instanceName}/connect?phone=${phone}`);
+            if (res.data.paircode || res.data.code) {
+                const code = res.data.paircode || res.data.code;
+                alert(`Seu código de pareamento é: ${code}`);
             } else {
                 toast.error("Erro ao gerar código de pareamento");
             }
@@ -240,16 +230,8 @@ export default function InstancesPage() {
         }
     };
 
-    const handleOpenDocs = async () => {
-        try {
-            const settings = await axios.get("/api/settings");
-            const apiUrl = settings.data["EVOLUTION_API_URL"];
-            if (apiUrl) {
-                window.open(`${apiUrl.replace(/\/$/, "")}/docs`, "_blank");
-            }
-        } catch (error) {
-            toast.error("Erro ao abrir documentação");
-        }
+    const handleOpenDocs = () => {
+        window.open("https://sartori.uazapi.com/docs", "_blank");
     };
 
     const isModalOpenVisible = isModalOpen; // Dummy line to help replacement
@@ -398,12 +380,12 @@ export default function InstancesPage() {
                                             </h4>
                                             <div className="space-y-4">
                                                 <div className="flex justify-between items-center py-3 border-b border-slate-700/30">
-                                                    <span className="text-slate-400 text-sm font-medium">Versão Evolution</span>
-                                                    <span className="text-white text-sm font-black italic">v2.3.7</span>
+                                                    <span className="text-slate-400 text-sm font-medium">Engine</span>
+                                                    <span className="text-[#d4af37] text-sm font-black italic">UazAPI</span>
                                                 </div>
                                                 <div className="flex justify-between items-center py-3 border-b border-slate-700/30">
                                                     <span className="text-slate-400 text-sm font-medium">Provider</span>
-                                                    <span className="text-white text-sm font-bold">WhatsApp Business</span>
+                                                    <span className="text-white text-sm font-bold">WhatsApp (UazAPI)</span>
                                                 </div>
                                                 <div className="flex justify-between items-center py-3 border-b border-slate-700/30">
                                                     <span className="text-slate-400 text-sm font-medium">Webhooks</span>
@@ -487,7 +469,7 @@ export default function InstancesPage() {
                                                         ) : (
                                                             <div className="w-56 h-56 bg-slate-50 flex flex-col items-center justify-center rounded-xl text-slate-300">
                                                                 <span className="material-symbols-outlined text-6xl mb-2">qr_code_2</span>
-                                                                <span className="text-[8px] font-black uppercase tracking-widest px-4">Aguardando resposta da Evolution Hub...</span>
+                                                                <span className="text-[8px] font-black uppercase tracking-widest px-4">Aguardando resposta da UazAPI...</span>
                                                             </div>
                                                         )}
                                                     </div>
@@ -540,7 +522,7 @@ export default function InstancesPage() {
                                     <div className="px-6 py-4 border-b border-slate-800/50 flex items-center justify-between bg-black/20">
                                         <div className="flex items-center gap-3">
                                             <div className="size-2 bg-primary rounded-full animate-pulse shadow-[0_0_8px_rgba(59,130,246,0.8)]"></div>
-                                            <h4 className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Console Log - Evolution API Engine</h4>
+                                            <h4 className="text-slate-400 font-bold text-[10px] uppercase tracking-[0.2em]">Console Log — UazAPI Engine</h4>
                                         </div>
                                         <div className="flex gap-2">
                                             <div className="size-2.5 rounded-full bg-slate-800"></div>
@@ -553,7 +535,7 @@ export default function InstancesPage() {
                                             <div className="flex gap-4 items-start">
                                                 <span className="text-slate-700 shrink-0">[{new Date().toLocaleTimeString()}]</span>
                                                 <span className="text-blue-500 font-bold shrink-0">[SYSTEM]</span>
-                                                <span className="text-slate-500 italic">Initialized connection handler for v2.3.7 core integration...</span>
+                                                <span className="text-slate-500 italic">Initialized UazAPI handler for instance...</span>
                                             </div>
                                             <div className="flex gap-4 items-start">
                                                 <span className="text-slate-700 shrink-0">[{new Date().toLocaleTimeString()}]</span>
@@ -587,7 +569,7 @@ export default function InstancesPage() {
                             <div className="p-8 border-b border-slate-800/50 flex justify-between items-center bg-slate-900/40">
                                 <div>
                                     <h3 className="text-white text-2xl font-black italic uppercase italic tracking-tighter">Nova Instância</h3>
-                                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">Evolution v2.3.7 Engine</p>
+                                    <p className="text-slate-500 text-[10px] font-bold uppercase tracking-widest mt-1">UazAPI Engine  Token gerado automaticamente</p>
                                 </div>
                                 <button onClick={() => setIsModalOpen(false)} className="size-10 flex items-center justify-center rounded-2xl bg-slate-800/50 text-slate-400 hover:text-white transition-all">
                                     <span className="material-symbols-outlined">close</span>
@@ -615,39 +597,12 @@ export default function InstancesPage() {
                                     </div>
                                 </div>
 
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
-                                        <div className="size-1 bg-primary rounded-full"></div>
-                                        Token de Acesso (Opcional)
-                                    </label>
-                                    <div className="relative group">
-                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[20px] group-focus-within:text-primary transition-colors">key</span>
-                                        <input
-                                            className="w-full bg-slate-900/50 border border-slate-800/80 rounded-2xl py-4 pl-12 pr-4 text-white placeholder:text-slate-700 focus:ring-2 focus:ring-primary/40 focus:border-primary/40 outline-none transition-all font-bold"
-                                            placeholder="Ex: 22"
-                                            value={newInstanceToken}
-                                            onChange={(e) => setNewInstanceToken(e.target.value)}
-                                        />
-                                    </div>
-                                </div>
-
-                                <div className="space-y-3">
-                                    <label className="text-[10px] font-black text-slate-500 uppercase tracking-[0.2em] ml-1 flex items-center gap-2">
-                                        <div className="size-1 bg-primary rounded-full"></div>
-                                        Integração
-                                    </label>
-                                    <div className="relative group">
-                                        <span className="material-symbols-outlined absolute left-4 top-1/2 -translate-y-1/2 text-slate-500 text-[20px] group-focus-within:text-primary transition-colors">hub</span>
-                                        <select
-                                            className="w-full bg-slate-900/50 border border-slate-800/80 rounded-2xl py-4 pl-12 pr-4 text-white focus:ring-2 focus:ring-primary/40 focus:border-primary/40 outline-none transition-all font-bold appearance-none"
-                                            value={newInstanceIntegration}
-                                            onChange={(e) => setNewInstanceIntegration(e.target.value)}
-                                        >
-                                            <option value="WHATSAPP-BAILEYS">WhatsApp (Baileys)</option>
-                                            <option value="WHATSAPP-BUSINESS">WhatsApp Business</option>
-                                            <option value="INTEGRATION-WBC">WBC Integration</option>
-                                        </select>
-                                        <span className="material-symbols-outlined absolute right-4 top-1/2 -translate-y-1/2 text-slate-500 pointer-events-none">expand_more</span>
+                                {/* Info UazAPI */}
+                                <div className="flex items-start gap-3 p-4 rounded-2xl bg-[#d4af37]/5 border border-[#d4af37]/20">
+                                    <span className="material-symbols-outlined text-[#d4af37] text-xl shrink-0 mt-0.5">info</span>
+                                    <div>
+                                        <p className="text-[#d4af37] text-[10px] font-black uppercase tracking-widest mb-1">Token automático</p>
+                                        <p className="text-slate-500 text-xs leading-relaxed">O token será gerado automaticamente pelo servidor UazAPI. Após criar, conecte escaneando o QR Code.</p>
                                     </div>
                                 </div>
                                 <div className="pt-4 flex gap-4">
