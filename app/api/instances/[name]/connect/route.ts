@@ -17,27 +17,35 @@ export async function GET(
         console.log(`🔗 Conectando instância: ${name}`);
 
         const data: any = await connectInstance(name);
-        console.log(`📡 UazAPI connect response keys:`, Object.keys(data || {}));
-        console.log(`📡 status:`, data?.status, `| qrcode length:`, data?.qrcode?.length, `| paircode:`, data?.paircode);
 
-        // UazAPI retorna `qrcode` (base64 puro ou data URL) e `paircode`
-        // O frontend espera `base64` e `pairingCode`
-        let base64 = data?.qrcode || data?.base64 || null;
+        // UazAPI retorna estrutura: { connected: bool, instance: { qrcode, paircode, status, ... }, status: { connected, jid, loggedIn } }
+        // O qrcode está DENTRO de data.instance.qrcode (e já vem com prefixo data:image/png;base64,)
+        console.log(`📡 UazAPI connect - keys:`, Object.keys(data || {}));
+
+        const inst = data?.instance || {};
+        const statusObj = data?.status || {};
+
+        // Pegar qrcode de onde estiver
+        let base64 = inst?.qrcode || data?.qrcode || data?.base64 || null;
         if (base64 && !base64.startsWith('data:')) {
             base64 = `data:image/png;base64,${base64}`;
         }
 
-        const isConnected = data?.status?.connected === true ||
-            data?.status?.loggedIn === true ||
-            data?.instance?.status === 'connected';
+        const paircode = inst?.paircode || data?.paircode || null;
+
+        const isConnected = statusObj?.connected === true ||
+            statusObj?.loggedIn === true ||
+            inst?.status === 'connected' ||
+            data?.connected === true;
+
+        console.log(`📡 base64 present: ${!!base64} | paircode: ${paircode} | connected: ${isConnected}`);
 
         return NextResponse.json({
             base64,
-            pairingCode: data?.paircode || data?.pairingCode || null,
-            code: data?.paircode || null,
+            pairingCode: paircode,
+            code: paircode,
             status: isConnected ? 'open' : 'connecting',
-            message: data?.status?.jid ? `Conectado: ${data.status.jid}` : null,
-            raw: data, // para debug
+            message: statusObj?.jid ? `Conectado: ${statusObj.jid}` : null,
         });
     } catch (error: any) {
         console.error("❌ Connect error:", error);
