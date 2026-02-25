@@ -4,6 +4,11 @@ import { sendMessage, sendPresence } from "@/lib/evolution";
 
 const sleep = (ms: number) => new Promise(resolve => setTimeout(resolve, ms));
 
+// Evolution API faz um GET para validar o endpoint antes de registrar o webhook
+export async function GET() {
+    return NextResponse.json({ success: true, message: "Webhook endpoint is alive" });
+}
+
 export async function POST(request: Request) {
     try {
         const body = await request.json();
