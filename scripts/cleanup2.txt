@@ -1,0 +1,6 @@
+﻿=== LIMPEZA DE INST├éNCIAS ===
+
+­ƒôï Buscando inst├óncias na UazAPI...
+  Encontradas: 2 inst├óncia(s)
+
+­ƒùæ´©Å  Deletando "merces" (token: 52f9e705-6563-4b00-a499-67248ef16181)...
